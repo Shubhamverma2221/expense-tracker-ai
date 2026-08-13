@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="settings-view" style="max-width: 680px; margin: 0 auto;">
+    <!-- Header -->
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">
+                <span>⚙️ Account Settings & Security</span>
+            </h1>
+            <p class="page-subtitle">Security credentials, data backups, and account controls</p>
+        </div>
+    </div>
+
+    <!-- Password Change Card -->
+    <div class="card" style="margin-bottom: 2rem;">
+        <div class="card-header">
+            <h3 class="card-title">🔐 Change Password</h3>
+        </div>
+        <form action="{{ url_for('change_password_route') }}" method="POST">
+            <div class="form-group">
+                <label class="form-label">New Password</label>
+                <input type="password" name="new_password" class="form-control" placeholder="At least 6 characters" required minlength="6">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Confirm New Password</label>
+                <input type="password" name="confirm_password" class="form-control" placeholder="Re-enter new password" required minlength="6">
+            </div>
+            <button type="submit" class="btn btn-secondary">
+                Update Password
+            </button>
+        </form>
+    </div>
+
+    <!-- Data Export Card -->
+    <div class="card" style="margin-bottom: 2rem;">
+        <div class="card-header">
+            <h3 class="card-title">📥 Export & Data Backup</h3>
+        </div>
+        <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.25rem;">
+            Download all your expense transactions, notes, and category distributions to an offline format.
+        </p>
+        <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+            <a href="{{ url_for('export_expenses_csv') }}" class="btn btn-secondary">
+                <span>📊 Export Complete CSV</span>
+            </a>
+            <a href="{{ url_for('export_expenses_json') }}" class="btn btn-secondary">
+                <span>📄 Export JSON Data</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Danger Zone Card -->
+    <div class="card" style="border-color: rgba(239, 68, 68, 0.3);">
+        <div class="card-header">
+            <h3 class="card-title" style="color: var(--danger);">⚠️ Danger Zone</h3>
+        </div>
+        <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.25rem;">
+            Permanently delete your account and all associated transactions, budgets, and predictive records. This action cannot be undone.
+        </p>
+        <form action="{{ url_for('delete_account_route') }}" method="POST" onsubmit="return confirm('WARNING: Are you sure you want to permanently delete your account and all financial data?');">
+            <button type="submit" class="btn btn-danger">
+                🗑️ Permanently Delete Account
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

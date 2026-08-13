@@ -1,0 +1,419 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard-view">
+    <!-- Top Header -->
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">
+                <span>👋 Welcome back, {{ (user.name if user else 'Demo User').split(' ')[0] }}</span>
+            </h1>
+            <p class="page-subtitle">Personal Financial Decision & Risk Intelligence Platform for {{ current_month_name }}</p>
+        </div>
+        <div style="display: flex; gap: 0.75rem; align-items: center;">
+            <a href="{{ url_for('decision_studio_page') }}" class="btn btn-secondary" style="border-color: var(--primary);">
+                <span>🧠 Decision Studio</span>
+            </a>
+            <button class="btn btn-primary" data-open-modal="quickAddModal">
+                <span>➕ Log Expense</span>
+            </button>
+            <a href="{{ url_for('export_expenses_csv') }}" class="btn btn-secondary btn-sm" title="Export CSV">
+                <span>📥 Export CSV</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- CASH-FLOW SHORTFALL WARNING BANNER (IF DETECTED) -->
+    {% if cashflow_alerts and cashflow_alerts|length > 0 %}
+    <div style="padding: 1rem 1.25rem; background: var(--danger-light); border: 1px solid rgba(239, 68, 68, 0.4); border-radius: var(--radius-md); margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem;">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <span style="font-size: 1.5rem;">🚨</span>
+            <div>
+                <strong style="color: var(--danger); font-size: 0.95rem;">Cash-Flow Collision Alert on {{ cashflow_alerts[0].day_name }}</strong>
+                <p style="color: var(--text-primary); font-size: 0.88rem; margin: 0;">{{ cashflow_alerts[0].message }}</p>
+            </div>
+        </div>
+        <a href="{{ url_for('decision_studio_page') }}" class="btn btn-danger btn-sm" style="white-space: nowrap;">
+            Resolve in Decision Studio →
+        </a>
+    </div>
+    {% endif %}
+
+    <!-- DECISION INTELLIGENCE HERO ROW (Health Score + Safe Daily Allowance) -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+        <!-- Card 1: AI Financial Health Score -->
+        <div class="card hero-health-card">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                <div>
+                    <span style="font-size: 0.82rem; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 0.05em;">🧠 AI Financial Health Rating</span>
+                    <div style="display: flex; align-items: baseline; gap: 0.6rem; margin-top: 0.25rem;">
+                        <span style="font-size: 2.2rem; font-weight: 900; color: var(--text-primary);">{{ health_score.score }}</span>
+                        <span style="font-size: 1.1rem; color: var(--text-muted); font-weight: 600;">/ 100</span>
+                        <span class="badge" style="background: var(--accent-light); color: var(--accent); font-size: 0.85rem; padding: 3px 8px;">
+                            Grade {{ health_score.grade }} ({{ health_score.status }})
+                        </span>
+                    </div>
+                </div>
+                <div style="text-align: right;">
+                    <span style="font-size: 0.78rem; color: var(--text-muted);">Savings Rate</span>
+                    <div style="font-size: 1.2rem; font-weight: 800; color: var(--accent);">{{ health_score.savings_rate_pct }}%</div>
+                </div>
+            </div>
+            <p style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 0.75rem;">
+                {{ health_score.diagnosis }}
+            </p>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                {% for k, f in health_score.factors.items() %}
+                <span style="font-size: 0.75rem; padding: 2px 8px; background: var(--bg-input); border-radius: var(--radius-full); color: var(--text-secondary); border: 1px solid var(--border-color);">
+                    {{ f.label }}: <strong style="color: var(--text-primary);">{{ f.score }}/{{ f.max }}</strong>
+                </span>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Card 2: Safe-to-Spend Daily Allowance -->
+        <div class="card hero-safe-card">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                <div>
+                    <span style="font-size: 0.82rem; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em;">💰 Safe-to-Spend Allowance Today</span>
+                    <div style="display: flex; align-items: baseline; gap: 0.4rem; margin-top: 0.25rem;">
+                        <span style="font-size: 2.2rem; font-weight: 900; color: var(--accent);">{{ currency }}{{ "%.2f"|format(safe_daily_spend.safe_daily_spend) }}</span>
+                        <span style="font-size: 0.95rem; color: var(--text-muted);">/ day</span>
+                    </div>
+                </div>
+                <div style="text-align: right;">
+                    <span style="font-size: 0.78rem; color: var(--text-muted);">Billing Cycle</span>
+                    <div style="font-size: 1.1rem; font-weight: 800; color: var(--text-primary);">{{ safe_daily_spend.days_left }} Days Left</div>
+                </div>
+            </div>
+            <p style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 0.75rem;">
+                Spending at or below this run-rate ensures you comfortably meet upcoming recurring bills and achieve your monthly savings target.
+            </p>
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0.75rem; background: var(--bg-input); border-radius: var(--radius-sm); font-size: 0.82rem;">
+                <span style="color: var(--text-muted);">Remaining Safe Discretionary Pool:</span>
+                <strong style="color: var(--text-primary); font-size: 0.92rem;">{{ currency }}{{ "%.2f"|format(safe_daily_spend.safe_pool) }}</strong>
+            </div>
+        </div>
+    </div>
+
+    <!-- Standard KPI Metric Cards Grid -->
+    <div class="kpi-grid">
+        <!-- Card 1: Month Spend -->
+        <div class="kpi-card accent-rose">
+            <div>
+                <div class="kpi-label">This Month Total</div>
+                <div class="kpi-value">{{ currency }}{{ "%.2f"|format(summary.total) }}</div>
+                <div class="kpi-subtext">
+                    <span>🧾 {{ summary.count }} transactions logged</span>
+                </div>
+            </div>
+            <div class="kpi-icon-box" style="color: var(--danger);">💸</div>
+        </div>
+
+        <!-- Card 2: Budget Remaining -->
+        <div class="kpi-card accent-emerald">
+            <div>
+                <div class="kpi-label">Budget Remaining</div>
+                <div class="kpi-value">{{ currency }}{{ "%.2f"|format(budget_remaining) }}</div>
+                <div class="kpi-subtext" style="color: var(--accent);">
+                    <span>🎯 {{ budget_used_pct }}% of {{ currency }}{{ "%.0f"|format(user_monthly_budget) }} limit</span>
+                </div>
+            </div>
+            <div class="kpi-icon-box" style="color: var(--accent);">🛡️</div>
+        </div>
+
+        <!-- Card 3: Daily Average -->
+        <div class="kpi-card accent-amber">
+            <div>
+                <div class="kpi-label">Daily Average Spend</div>
+                <div class="kpi-value">{{ currency }}{{ "%.2f"|format(summary.daily_average) }}</div>
+                <div class="kpi-subtext">
+                    <span>📅 Based on {{ day_of_month }} days elapsed</span>
+                </div>
+            </div>
+            <div class="kpi-icon-box" style="color: var(--warning);">📊</div>
+        </div>
+
+        <!-- Card 4: AI Forecast -->
+        <div class="kpi-card accent-cyan">
+            <div>
+                <div class="kpi-label">AI Forecast (Next Month)</div>
+                <div class="kpi-value">{{ currency }}{{ "%.2f"|format(forecast.total_next_month) }}</div>
+                <div class="kpi-subtext">
+                    <span class="badge" style="background: {% if forecast.trend == 'Increasing' %}var(--danger-light); color: var(--danger){% elif forecast.trend == 'Decreasing' %}var(--accent-light); color: var(--accent){% else %}var(--info-light); color: var(--info){% endif %}; padding: 2px 6px;">
+                        {{ '📈' if forecast.trend == 'Increasing' else ('📉' if forecast.trend == 'Decreasing' else '➡️') }} {{ forecast.trend }} ({{ forecast.confidence_score }}% confidence)
+                    </span>
+                </div>
+            </div>
+            <div class="kpi-icon-box" style="color: var(--info);">🔮</div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="charts-grid">
+        <!-- 6-Month Spending Trend Bar Chart -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">📈 6-Month Spending Trend</h3>
+                <a href="{{ url_for('analytics_page') }}" style="font-size: 0.85rem;">Deep Analytics →</a>
+            </div>
+            <div class="chart-container">
+                <canvas id="trendChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Category Distribution Donut Chart -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">🍩 Category Breakdown</h3>
+                <span style="font-size: 0.82rem; color: var(--text-muted);">This Month</span>
+            </div>
+            <div class="chart-container" style="display: flex; align-items: center; justify-content: center;">
+                {% if summary.by_category %}
+                <canvas id="categoryChart"></canvas>
+                {% else %}
+                <div class="empty-state" style="padding: 2rem 0;">
+                    <div class="empty-icon">🏷️</div>
+                    <div class="empty-title" style="font-size: 1.1rem;">No Category Data</div>
+                    <p class="empty-desc" style="font-size: 0.85rem;">Add expenses to see your spending distribution.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Category Budgets Health & Quick Actions Grid -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+        <!-- Budget Health Bars -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">🎯 Category Budget Health</h3>
+                <a href="{{ url_for('budgets_page') }}" style="font-size: 0.85rem;">Manage Budgets →</a>
+            </div>
+            {% if budgets %}
+            <div style="display: flex; flex-direction: column; gap: 1.1rem;">
+                {% for b in budgets %}
+                <div>
+                    <div style="display: flex; justify-content: space-between; font-size: 0.88rem; margin-bottom: 0.35rem;">
+                        <span style="font-weight: 600; color: var(--text-primary);">{{ b.category }}</span>
+                        <span style="color: var(--text-secondary);">
+                            {{ currency }}{{ "%.0f"|format(b.spent) }} / {{ currency }}{{ "%.0f"|format(b.limit_amount) }}
+                            <strong style="color: {% if b.percentage >= 100 %}var(--danger){% elif b.percentage >= 75 %}var(--warning){% else %}var(--accent){% endif %};">
+                                ({{ b.percentage }}%)
+                            </strong>
+                        </span>
+                    </div>
+                    <div style="width: 100%; height: 8px; background: var(--bg-input); border-radius: var(--radius-full); overflow: hidden;">
+                        <div style="width: {{ b.percentage }}%; height: 100%; background: {% if b.percentage >= 100 %}var(--danger){% elif b.percentage >= 75 %}var(--warning){% else %}var(--accent){% endif %}; border-radius: var(--radius-full); transition: width 0.6s ease;"></div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state" style="padding: 1.5rem 0;">
+                <p class="empty-desc">No category budgets set yet.</p>
+                <a href="{{ url_for('budgets_page') }}" class="btn btn-secondary btn-sm">Set Monthly Budgets</a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- AI Insights & Upcoming Recurring Bills -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">💡 Financial Insights & Upcoming</h3>
+                <span class="badge" style="background: var(--primary-light); color: var(--primary);">AI Copilot</span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                <div style="padding: 1rem; background: var(--bg-glass); border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+                    <div style="font-weight: 700; color: var(--text-primary); margin-bottom: 0.25rem; display: flex; align-items: center; gap: 0.4rem;">
+                        <span>🔮</span> AI Projection Note
+                    </div>
+                    <p style="font-size: 0.88rem; color: var(--text-secondary);">
+                        Next month's spend is estimated at <strong>{{ currency }}{{ "%.2f"|format(forecast.total_next_month) }}</strong> ({{ forecast.trend }} trend). Top predicted category is <strong>{{ (forecast.per_category_next_month|dictsort(by='value', reverse=true))[0][0] if forecast.per_category_next_month else 'General' }}</strong>.
+                    </p>
+                </div>
+
+                {% if upcoming_bills %}
+                <div>
+                    <div style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase;">Upcoming Recurring Bills</div>
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        {% for bill in upcoming_bills[:3] %}
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0.75rem; background: var(--bg-input); border-radius: var(--radius-sm); font-size: 0.88rem;">
+                            <span>🧾 {{ bill.description }}</span>
+                            <span style="font-weight: 700; color: var(--text-primary);">{{ currency }}{{ "%.2f"|format(bill.amount) }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Expenses Table / 5-State Empty State -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">📝 Recent Transactions</h3>
+            <a href="{{ url_for('list_expenses') }}" class="btn btn-secondary btn-sm">View All Transactions →</a>
+        </div>
+
+        {% if recent_expenses and recent_expenses|length > 0 %}
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Description</th>
+                        <th>Category</th>
+                        <th>Payment</th>
+                        <th>Amount</th>
+                        <th style="text-align: right;">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for exp in recent_expenses %}
+                    <tr>
+                        <td><code>{{ exp.date }}</code></td>
+                        <td>
+                            <strong style="color: var(--text-primary);">{{ exp.description }}</strong>
+                            {% if exp.notes %}<br><small style="color: var(--text-muted);">{{ exp.notes }}</small>{% endif %}
+                        </td>
+                        <td>
+                            <span class="badge" style="background: {{ cat_meta.get(exp.category, {}).get('bg', 'rgba(255,255,255,0.1)') }}; color: {{ cat_meta.get(exp.category, {}).get('color', 'var(--text-primary)') }};">
+                                {{ cat_meta.get(exp.category, {}).get('icon', '🏷️') }} {{ exp.category }}
+                            </span>
+                        </td>
+                        <td><small>{{ exp.payment_method or 'UPI' }}</small></td>
+                        <td>
+                            <strong style="color: var(--text-primary); font-size: 1rem;">
+                                {{ currency }}{{ "%.2f"|format(exp.amount) }}
+                            </strong>
+                        </td>
+                        <td style="text-align: right;">
+                            <form action="{{ url_for('delete_expense_route', expense_id=exp.id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Delete this expense?');">
+                                <button type="submit" class="btn btn-danger btn-sm" title="Delete">🗑️</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <!-- 5-State UX Empty State -->
+        <div class="empty-state">
+            <div class="empty-icon">💸</div>
+            <h4 class="empty-title">No Expenses Logged Yet</h4>
+            <p class="empty-desc">
+                Your financial journey starts with your first transaction. Add an expense or use the instant AI chat assistant.
+            </p>
+            <button class="btn btn-primary btn-lg" data-open-modal="quickAddModal">
+                <span>➕ Add Your First Expense</span>
+            </button>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+window.renderDashboardCharts = function() {
+    const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+    const textColor = isDark ? '#94a3b8' : '#475569';
+    const gridColor = isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)';
+
+    // Trend Chart Data
+    const trendCtx = document.getElementById('trendChart');
+    if (trendCtx) {
+        if (window.trendChartInstance) window.trendChartInstance.destroy();
+
+        const labels = {{ monthly_trend_labels|tojson|safe }};
+        const dataValues = {{ monthly_trend_values|tojson|safe }};
+
+        window.trendChartInstance = new Chart(trendCtx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Total Spend ({{ currency }})',
+                    data: dataValues,
+                    backgroundColor: 'rgba(99, 102, 241, 0.75)',
+                    borderColor: '#6366f1',
+                    borderWidth: 1.5,
+                    borderRadius: 6,
+                    hoverBackgroundColor: '#818cf8',
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: (ctx) => ` {{ currency }}${ctx.raw.toLocaleString()}`
+                        }
+                    }
+                },
+                scales: {
+                    x: { grid: { color: gridColor }, ticks: { color: textColor } },
+                    y: { grid: { color: gridColor }, ticks: { color: textColor }, beginAtZero: true }
+                }
+            }
+        });
+    }
+
+    // Category Breakdown Donut Chart
+    const catCtx = document.getElementById('categoryChart');
+    if (catCtx) {
+        if (window.catChartInstance) window.catChartInstance.destroy();
+
+        const catLabels = {{ category_chart_labels|tojson|safe }};
+        const catValues = {{ category_chart_values|tojson|safe }};
+        const catColors = {{ category_chart_colors|tojson|safe }};
+
+        if (catLabels && catLabels.length > 0) {
+            window.catChartInstance = new Chart(catCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: catLabels,
+                    datasets: [{
+                        data: catValues,
+                        backgroundColor: catColors,
+                        borderWidth: 2,
+                        borderColor: isDark ? '#1e293b' : '#ffffff',
+                        hoverOffset: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '72%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: textColor,
+                                boxWidth: 12,
+                                padding: 12,
+                                font: { size: 11 }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: (ctx) => ` ${ctx.label}: {{ currency }}${ctx.raw.toLocaleString()}`
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    }
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    window.renderDashboardCharts();
+});
+</script>
+{% endblock %}

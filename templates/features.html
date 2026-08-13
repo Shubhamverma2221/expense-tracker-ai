@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="features-view" style="max-width: 1000px; margin: 0 auto;">
+    <div style="text-align: center; margin-bottom: 3rem;">
+        <div class="hero-badge">
+            <span>✨ Complete Capabilities</span>
+        </div>
+        <h1 style="font-size: 2.5rem; font-weight: 800; color: var(--text-primary); letter-spacing: -0.03em;">
+            Explore All Features
+        </h1>
+        <p style="color: var(--text-muted); max-width: 600px; margin: 0.5rem auto 0;">
+            A complete suite of financial intelligence tools built for individuals, students, and professionals.
+        </p>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 2rem;">
+        <!-- Feature 1 -->
+        <div class="card" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: center;">
+            <div>
+                <div class="feature-icon-box">📊</div>
+                <h3 style="font-size: 1.4rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.5rem;">Visual Analytics & KPI Dashboard</h3>
+                <p style="color: var(--text-secondary); line-height: 1.6; font-size: 0.95rem;">
+                    Get an instant real-time snapshot of your monthly spend, budget utilization percentage, daily run-rate, and category breakdown via interactive Chart.js donut and bar charts.
+                </p>
+            </div>
+            <div style="padding: 1.5rem; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-md); text-align: center;">
+                <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">📈</div>
+                <strong style="color: var(--text-primary);">Interactive Charts</strong>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem;">Custom tooltips, dark/light theme responsiveness, and smooth transitions.</p>
+            </div>
+        </div>
+
+        <!-- Feature 2 -->
+        <div class="card" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: center;">
+            <div style="padding: 1.5rem; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-md); text-align: center;">
+                <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🔮</div>
+                <strong style="color: var(--text-primary);">Machine Learning Engine</strong>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem;">Linear regression algorithms with statistical confidence scoring.</p>
+            </div>
+            <div>
+                <div class="feature-icon-box" style="background: var(--accent-light); color: var(--accent);">🔮</div>
+                <h3 style="font-size: 1.4rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.5rem;">Predictive AI Forecasting</h3>
+                <p style="color: var(--text-secondary); line-height: 1.6; font-size: 0.95rem;">
+                    Stop wondering where your money went. Our ML model projects next month's total spend and provides an itemized breakdown across every category with confidence scores.
+                </p>
+            </div>
+        </div>
+
+        <!-- Feature 3 -->
+        <div class="card" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: center;">
+            <div>
+                <div class="feature-icon-box" style="background: rgba(236, 72, 153, 0.15); color: #ec4899;">💬</div>
+                <h3 style="font-size: 1.4rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.5rem;">Conversational Financial Assistant</h3>
+                <p style="color: var(--text-secondary); line-height: 1.6; font-size: 0.95rem;">
+                    Log transactions effortlessly in natural English (<em>"paid 450 for pizza yesterday"</em>). Inquire about category totals and get real-time savings tips.
+                </p>
+            </div>
+            <div style="padding: 1.5rem; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-md); text-align: center;">
+                <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🤖</div>
+                <strong style="color: var(--text-primary);">Available Everywhere</strong>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem;">Dedicated chat interface plus a floating widget on every page.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

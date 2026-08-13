@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="profile-view" style="max-width: 760px; margin: 0 auto;">
+    <!-- Header -->
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">
+                <span>👤 User Profile & Financial Baseline</span>
+            </h1>
+            <p class="page-subtitle">Manage personal account preferences, income baseline, and Student Mode settings</p>
+        </div>
+    </div>
+
+    <!-- Profile Details Card -->
+    <div class="card" style="margin-bottom: 2rem;">
+        <div style="display: flex; align-items: center; gap: 1.25rem; margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border-color);">
+            <div class="user-avatar" style="width: 64px; height: 64px; font-size: 1.6rem;">
+                {{ user.name[:1].upper() if user else 'U' }}
+            </div>
+            <div>
+                <h3 style="font-size: 1.3rem; font-weight: 800; color: var(--text-primary);">{{ user.name if user else 'Demo User' }}</h3>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">{{ user.email if user else 'guest@expensetracker.ai' }}</p>
+                <div style="display: flex; gap: 0.5rem; margin-top: 0.4rem;">
+                    <span class="badge" style="background: var(--primary-light); color: var(--primary);">
+                        {{ (user.role if user else 'user').upper() }}
+                    </span>
+                    {% if user and user.is_student_mode %}
+                    <span class="badge" style="background: var(--warning-light); color: var(--warning);">
+                        🧑‍🎓 Student Mode Active
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <form action="{{ url_for('profile_page') }}" method="POST">
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Full Name</label>
+                    <input type="text" name="name" class="form-control" value="{{ user.name if user else '' }}" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Preferred Currency Symbol</label>
+                    <select name="currency" class="form-select">
+                        <option value="₹" {% if user and user.currency == '₹' %}selected{% endif %}>₹ INR (Indian Rupee)</option>
+                        <option value="$" {% if user and user.currency == '$' %}selected{% endif %}>$ USD (US Dollar)</option>
+                        <option value="€" {% if user and user.currency == '€' %}selected{% endif %}>€ EUR (Euro)</option>
+                        <option value="£" {% if user and user.currency == '£' %}selected{% endif %}>£ GBP (British Pound)</option>
+                        <option value="¥" {% if user and user.currency == '¥' %}selected{% endif %}>¥ JPY (Japanese Yen)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Financial Baselines for AI Health & Decision Engine -->
+            <div style="padding: 1.25rem; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-md); margin-bottom: 1.5rem;">
+                <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--primary); text-transform: uppercase; margin-bottom: 1rem;">
+                    🧠 Financial Baselines (For Health Score & Decision Engine)
+                </h4>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Monthly Expected Income ({{ currency }})</label>
+                        <input type="number" step="500" name="income" class="form-control" value="{{ user.income if user and user.income else 50000 }}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Monthly Target Budget Limit ({{ currency }})</label>
+                        <input type="number" step="500" name="monthly_budget" class="form-control" value="{{ user.monthly_budget if user else 25000 }}">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Annual Savings Goal Target ({{ currency }})</label>
+                    <input type="number" step="1000" name="savings_goal" class="form-control" value="{{ user.savings_goal if user and user.savings_goal else 100000 }}">
+                </div>
+            </div>
+
+            <!-- Student Mode Section -->
+            <div style="padding: 1.25rem; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-md); margin-bottom: 1.5rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                    <label class="form-label" style="margin: 0; font-size: 1rem; font-weight: 700; color: var(--text-primary);">
+                        🧑‍🎓 Student Mode & Allowance Runway
+                    </label>
+                    <input type="checkbox" name="is_student_mode" value="1" id="studentModeCheck" {% if user and user.is_student_mode %}checked{% endif %} style="width: 20px; height: 20px; accent-color: var(--primary);">
+                </div>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+                    Optimizes the decision engine for fixed monthly pocket money, hostel bills, food delivery tracking, and calculates a dynamic "Money Runway" (days until allowance depletion).
+                </p>
+                <div class="form-group" id="allowanceField" style="{% if not (user and user.is_student_mode) %}display: none;{% endif %}">
+                    <label class="form-label">Monthly Pocket Money / Allowance ({{ currency }})</label>
+                    <input type="number" step="100" name="monthly_allowance" class="form-control" value="{{ user.monthly_allowance if user and user.monthly_allowance else 15000 }}">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">UI Color Theme</label>
+                <select name="theme" class="form-select">
+                    <option value="dark" {% if user and user.theme == 'dark' %}selected{% endif %}>🌙 Sleek Dark Theme</option>
+                    <option value="light" {% if user and user.theme == 'light' %}selected{% endif %}>☀️ Clean Light Theme</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-lg" style="margin-top: 1rem;">
+                💾 Save Profile Changes
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const studentCheck = document.getElementById('studentModeCheck');
+    const allowanceField = document.getElementById('allowanceField');
+    if (studentCheck && allowanceField) {
+        studentCheck.addEventListener('change', () => {
+            allowanceField.style.display = studentCheck.checked ? 'block' : 'none';
+        });
+    }
+});
+</script>
+{% endblock %}

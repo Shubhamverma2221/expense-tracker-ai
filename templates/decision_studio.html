@@ -1,0 +1,473 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="decision-studio-view">
+    <!-- Header -->
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">
+                <span>🧠 AI Financial Decision & Risk Studio</span>
+            </h1>
+            <p class="page-subtitle">Real-time affordability checks, scenario simulations, money leak detection, and cash-flow collision forecasting</p>
+        </div>
+    </div>
+
+    <!-- Studio Tab Navigation Bar -->
+    <div style="display: flex; gap: 0.5rem; border-bottom: 1px solid var(--border-color); margin-bottom: 2rem; overflow-x: auto; padding-bottom: 4px;">
+        <button class="btn btn-secondary tab-btn active" data-tab="tab-affordability">🔴 Can I Afford This?</button>
+        <button class="btn btn-secondary tab-btn" data-tab="tab-what-if">🧪 What-If Scenario Lab</button>
+        <button class="btn btn-secondary tab-btn" data-tab="tab-leaks">🕵️ Money Leak Detector</button>
+        <button class="btn btn-secondary tab-btn" data-tab="tab-collisions">⏰ Cash-Flow Collision</button>
+        <button class="btn btn-secondary tab-btn" data-tab="tab-receipt">🧾 Receipt Scanner</button>
+    </div>
+
+    <!-- TAB 1: CAN I AFFORD THIS? -->
+    <div id="tab-affordability" class="tab-content">
+        <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 2rem; align-items: flex-start;">
+            <!-- Purchase Input Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">🛒 Purchase Evaluator</h3>
+                </div>
+                <p style="color: var(--text-muted); font-size: 0.88rem; margin-bottom: 1.25rem;">
+                    Analyze the true impact of a planned purchase on your remaining monthly allowance and upcoming bills.
+                </p>
+                <form id="affordForm">
+                    <div class="form-group">
+                        <label class="form-label">Item / Service Name</label>
+                        <input type="text" id="affordItem" class="form-control" placeholder="e.g. Nike Running Shoes, Sony Headphones" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Price ({{ currency }})</label>
+                        <input type="number" step="0.01" min="1" id="affordAmount" class="form-control" placeholder="e.g. 3500.00" required style="font-size: 1.2rem; font-weight: 700;">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Category</label>
+                        <select id="affordCategory" class="form-select">
+                            <option value="">⚡ Auto-Detect with AI</option>
+                            <option value="Shopping">🛍️ Shopping</option>
+                            <option value="Food">🍔 Food & Dining</option>
+                            <option value="Entertainment">🎬 Entertainment</option>
+                            <option value="Travel">🚕 Travel</option>
+                            <option value="Health">🩺 Health & Fitness</option>
+                            <option value="Other">📦 Other</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-lg" style="width: 100%; justify-content: center; margin-top: 1rem;">
+                        <span>🔍 Evaluate Affordability</span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Decision Verdict Output Box -->
+            <div class="card" id="affordResultBox" style="min-height: 380px; display: flex; flex-direction: column; justify-content: center;">
+                <div id="affordInitialState" class="empty-state" style="padding: 2rem 0;">
+                    <div class="empty-icon">💡</div>
+                    <h4 class="empty-title">Ready to Analyze</h4>
+                    <p class="empty-desc">Enter any purchase on the left to evaluate risk, buffer impact, and safe daily limits.</p>
+                </div>
+
+                <div id="affordActiveResult" style="display: none;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+                        <div>
+                            <span id="affordVerdictBadge" class="badge" style="font-size: 1rem; padding: 6px 14px;">Affordable ✅</span>
+                        </div>
+                        <div style="text-align: right;">
+                            <span style="font-size: 0.82rem; color: var(--text-muted);">Risk Rating</span>
+                            <div id="affordRiskScore" style="font-size: 1.2rem; font-weight: 800; color: var(--text-primary);">20 / 100</div>
+                        </div>
+                    </div>
+
+                    <div style="padding: 1.25rem; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-md); margin-bottom: 1.25rem;">
+                        <h4 style="font-size: 1.05rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem;" id="affordItemTitle">Nike Running Shoes</h4>
+                        <p style="font-size: 0.92rem; color: var(--text-secondary); line-height: 1.6;" id="affordRecommendation"></p>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div style="padding: 0.85rem; background: var(--bg-input); border-radius: var(--radius-sm);">
+                            <div style="font-size: 0.78rem; color: var(--text-muted); text-transform: uppercase;">Discretionary Buffer After</div>
+                            <strong style="font-size: 1.2rem; color: var(--text-primary);" id="affordBufferAfter">{{ currency }}0.00</strong>
+                        </div>
+                        <div style="padding: 0.85rem; background: var(--bg-input); border-radius: var(--radius-sm);">
+                            <div style="font-size: 0.78rem; color: var(--text-muted); text-transform: uppercase;">Safe Daily Spend Impact</div>
+                            <strong style="font-size: 1.2rem; color: var(--accent);" id="affordDailyImpact">{{ currency }}0 ➔ {{ currency }}0</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 2: WHAT-IF SCENARIO LAB -->
+    <div id="tab-what-if" class="tab-content" style="display: none;">
+        <div class="card" style="margin-bottom: 2rem;">
+            <div class="card-header">
+                <div>
+                    <h3 class="card-title">🧪 6-Month Wealth Simulation Trajectory</h3>
+                    <span style="font-size: 0.85rem; color: var(--text-muted);">Blue curve is baseline wealth creation; Purple curve simulates the scenario</span>
+                </div>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button class="btn btn-sm btn-secondary scenario-preset" data-type="major_purchase" data-amount="60000" data-name="Laptop Purchase">💻 Buy ₹60k Laptop</button>
+                    <button class="btn btn-sm btn-secondary scenario-preset" data-type="habit_change" data-daily="100">☕ Save ₹100/day</button>
+                    <button class="btn btn-sm btn-secondary scenario-preset" data-type="fixed_cost" data-cost="2500">🏠 Rent +₹2,500</button>
+                </div>
+            </div>
+
+            <div class="chart-container" style="height: 320px; margin-bottom: 1.5rem;">
+                <canvas id="whatIfChart"></canvas>
+            </div>
+
+            <div id="whatIfSummaryBox" style="padding: 1.25rem; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+                <h4 id="whatIfTitle" style="font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.4rem;">Select a preset scenario above to simulate</h4>
+                <p id="whatIfExplanation" style="color: var(--text-secondary); font-size: 0.92rem;">Simulating real-world financial shifts helps you understand long-term opportunity cost before taking action.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 3: MONEY LEAK DETECTOR -->
+    <div id="tab-leaks" class="tab-content" style="display: none;">
+        <div class="kpi-grid">
+            <div class="kpi-card accent-rose">
+                <div>
+                    <div class="kpi-label">Micro-Purchases (&lt; {{ currency }}300)</div>
+                    <div class="kpi-value">{{ money_leaks.micro_spend_count }}</div>
+                    <div class="kpi-subtext">Small impulse/delivery items</div>
+                </div>
+                <div class="kpi-icon-box" style="color: var(--danger);">☕</div>
+            </div>
+
+            <div class="kpi-card accent-amber">
+                <div>
+                    <div class="kpi-label">Total Micro-Drain This Month</div>
+                    <div class="kpi-value">{{ currency }}{{ "%.2f"|format(money_leaks.total_micro_amount) }}</div>
+                    <div class="kpi-subtext">{{ money_leaks.leak_pct }}% of your total spend</div>
+                </div>
+                <div class="kpi-icon-box" style="color: var(--warning);">💸</div>
+            </div>
+
+            <div class="kpi-card accent-emerald">
+                <div>
+                    <div class="kpi-label">Projected Annual Drain</div>
+                    <div class="kpi-value">{{ currency }}{{ "%.2f"|format(money_leaks.annual_projected) }}</div>
+                    <div class="kpi-subtext" style="color: var(--accent);">If habits continue uncurbed</div>
+                </div>
+                <div class="kpi-icon-box" style="color: var(--accent);">📈</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div>
+                    <h3 class="card-title">🕵️ Identified Micro-Expenses</h3>
+                    <span style="font-size: 0.85rem; color: var(--text-muted);">{{ money_leaks.recommendation }}</span>
+                </div>
+            </div>
+
+            {% if money_leaks.items %}
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Description</th>
+                            <th>Category</th>
+                            <th>Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in money_leaks.leak_items %}
+                        <tr>
+                            <td><code>{{ item.date }}</code></td>
+                            <td><strong style="color: var(--text-primary);">{{ item.description }}</strong></td>
+                            <td>
+                                <span class="badge" style="background: {{ cat_meta.get(item.category, {}).get('bg', 'rgba(255,255,255,0.1)') }}; color: {{ cat_meta.get(item.category, {}).get('color', 'var(--text-primary)') }};">
+                                    {{ cat_meta.get(item.category, {}).get('icon', '🏷️') }} {{ item.category }}
+                                </span>
+                            </td>
+                            <td><strong style="color: var(--danger);">{{ currency }}{{ "%.2f"|format(item.amount) }}</strong></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <p class="empty-desc">No micro-expenses detected below {{ currency }}300.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- TAB 4: CASH-FLOW COLLISION -->
+    <div id="tab-collisions" class="tab-content" style="display: none;">
+        <div class="card" style="margin-bottom: 2rem;">
+            <div class="card-header">
+                <div>
+                    <h3 class="card-title">⏰ 20-Day Cash-Flow Collision Predictor</h3>
+                    <span style="font-size: 0.85rem; color: var(--text-muted);">Predicts dates where balance runs low before scheduled recurring bills</span>
+                </div>
+            </div>
+
+            {% if cashflow_collisions and cashflow_collisions|length > 0 %}
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                {% for col in cashflow_collisions %}
+                <div style="padding: 1.25rem; background: var(--danger-light); border: 1px solid rgba(239, 68, 68, 0.4); border-radius: var(--radius-md); display: flex; justify-content: space-between; align-items: center; gap: 1rem;">
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+                            <span style="font-size: 1.3rem;">🚨</span>
+                            <strong style="font-size: 1rem; color: var(--danger);">Collision Date: {{ col.day_name }}</strong>
+                            <span class="badge" style="background: var(--danger); color: white;">In {{ col.days_until }} days</span>
+                        </div>
+                        <p style="font-size: 0.88rem; color: var(--text-primary); margin-top: 0.25rem;">
+                            {{ col.message }}
+                        </p>
+                    </div>
+                    <div style="text-align: right; min-width: 140px;">
+                        <span style="font-size: 0.8rem; color: var(--text-muted);">Shortfall</span>
+                        <div style="font-size: 1.3rem; font-weight: 800; color: var(--danger);">{{ currency }}{{ "%.2f"|format(col.shortfall) }}</div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">🟢</div>
+                <h4 class="empty-title">All Clear! No Shortfalls Detected</h4>
+                <p class="empty-desc">
+                    Your estimated balance trajectory across the next 20 days is sufficient to meet all active recurring bills and scheduled commitments.
+                </p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- TAB 5: RECEIPT SCANNER & PARSER -->
+    <div id="tab-receipt" class="tab-content" style="display: none;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">🧾 Paste Bill Text / Upload Receipt</h3>
+                </div>
+                <p style="color: var(--text-muted); font-size: 0.88rem; margin-bottom: 1rem;">
+                    Paste any receipt snippet, SMS alert, or invoice text. Our NLP engine will extract merchant, date, and amount.
+                </p>
+                <div class="form-group">
+                    <label class="form-label">Receipt Text / Invoice Snippet</label>
+                    <textarea id="receiptInput" class="form-control" rows="8" placeholder="e.g.
+RELIANCE RETAIL LTD
+Order #89421
+12-08-2026
+Item 1: Organic Milk  140.00
+Item 2: Whole Wheat   260.00
+Grand Total: ₹400.00"></textarea>
+                </div>
+                <button type="button" id="parseReceiptBtn" class="btn btn-primary" style="width: 100%; justify-content: center;">
+                    ⚡ Extract & Auto-Parse
+                </button>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">📋 Extracted Expense Form</h3>
+                </div>
+                <form action="{{ url_for('add') }}" method="POST">
+                    <div class="form-group">
+                        <label class="form-label">Extracted Amount ({{ currency }})</label>
+                        <input type="number" step="0.01" min="0.01" name="amount" id="parsedAmount" class="form-control" placeholder="0.00" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Merchant / Description</label>
+                        <input type="text" name="description" id="parsedDesc" class="form-control" placeholder="Store Name" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Date</label>
+                            <input type="date" name="date" id="parsedDate" class="form-control" value="{{ today_date }}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Category</label>
+                            <select name="category" id="parsedCat" class="form-select">
+                                <option value="Food">🍔 Food</option>
+                                <option value="Shopping">🛍️ Shopping</option>
+                                <option value="Bills">🧾 Bills</option>
+                                <option value="Travel">🚕 Travel</option>
+                                <option value="Health">🩺 Health</option>
+                                <option value="Other">📦 Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-accent btn-lg" style="width: 100%; justify-content: center; margin-top: 1rem;">
+                        💾 Save Extracted Transaction
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+    const textColor = isDark ? '#94a3b8' : '#334155';
+    const gridColor = isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.08)';
+
+    // Tab Switching Logic
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    tabBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const targetId = btn.getAttribute('data-tab');
+            tabBtns.forEach(b => b.classList.remove('active', 'btn-primary'));
+            tabContents.forEach(c => c.style.display = 'none');
+
+            btn.classList.add('active', 'btn-primary');
+            const target = document.getElementById(targetId);
+            if (target) target.style.display = 'block';
+
+            if (targetId === 'tab-what-if') {
+                runWhatIfScenario('major_purchase', { amount: 60000, item_name: 'Laptop Purchase' });
+            }
+        });
+    });
+
+    // Affordability Evaluation Handler
+    const affordForm = document.getElementById('affordForm');
+    if (affordForm) {
+        affordForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const item = document.getElementById('affordItem').value.trim();
+            const amount = parseFloat(document.getElementById('affordAmount').value);
+            const category = document.getElementById('affordCategory').value;
+
+            try {
+                const res = await fetch('/api/affordability', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ item_name: item, amount: amount, category: category })
+                });
+                const data = await res.json();
+
+                document.getElementById('affordInitialState').style.display = 'none';
+                document.getElementById('affordActiveResult').style.display = 'block';
+
+                const badge = document.getElementById('affordVerdictBadge');
+                badge.textContent = data.verdict;
+                badge.style.background = data.verdict_badge === 'success' ? 'var(--accent-light)' : (data.verdict_badge === 'warning' ? 'var(--warning-light)' : 'var(--danger-light)');
+                badge.style.color = data.verdict_badge === 'success' ? 'var(--accent)' : (data.verdict_badge === 'warning' ? 'var(--warning)' : 'var(--danger)');
+
+                document.getElementById('affordRiskScore').textContent = `${data.risk_score} / 100`;
+                document.getElementById('affordItemTitle').textContent = `${data.item_name} (${data.category})`;
+                document.getElementById('affordRecommendation').textContent = data.recommendation;
+                document.getElementById('affordBufferAfter').textContent = `{{ currency }}${data.safe_pool_after.toFixed(2)}`;
+                document.getElementById('affordDailyImpact').textContent = `{{ currency }}${data.safe_daily_before.toFixed(0)} ➔ {{ currency }}${data.safe_daily_after.toFixed(0)} / day`;
+            } catch (err) {
+                showToast("Failed to evaluate purchase", "danger");
+            }
+        });
+    }
+
+    // What-If Simulator Handler
+    let whatIfChartInstance = null;
+    async function runWhatIfScenario(type, params) {
+        try {
+            const res = await fetch('/api/what-if', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ scenario_type: type, params: params })
+            });
+            const data = await res.json();
+
+            document.getElementById('whatIfTitle').textContent = data.scenario_title;
+            document.getElementById('whatIfExplanation').textContent = `${data.savings_delay} ${data.monthly_impact}`;
+
+            const ctx = document.getElementById('whatIfChart');
+            if (ctx) {
+                if (whatIfChartInstance) whatIfChartInstance.destroy();
+
+                whatIfChartInstance = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.months,
+                        datasets: [
+                            {
+                                label: 'Baseline Savings ({{ currency }})',
+                                data: data.baseline_trajectory,
+                                borderColor: '#6366f1',
+                                backgroundColor: 'rgba(99, 102, 241, 0.15)',
+                                fill: true,
+                                tension: 0.3,
+                                pointRadius: 5
+                            },
+                            {
+                                label: 'Simulated Trajectory ({{ currency }})',
+                                data: data.revised_trajectory,
+                                borderColor: '#ec4899',
+                                borderDash: [5, 5],
+                                backgroundColor: 'rgba(236, 72, 153, 0.1)',
+                                fill: true,
+                                tension: 0.3,
+                                pointRadius: 5
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { labels: { color: textColor } } },
+                        scales: {
+                            x: { grid: { color: gridColor }, ticks: { color: textColor } },
+                            y: { grid: { color: gridColor }, ticks: { color: textColor } }
+                        }
+                    }
+                });
+            }
+        } catch (err) {
+            console.error("What-if simulation error", err);
+        }
+    }
+
+    document.querySelectorAll('.scenario-preset').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const type = btn.getAttribute('data-type');
+            if (type === 'major_purchase') {
+                runWhatIfScenario('major_purchase', { amount: parseFloat(btn.getAttribute('data-amount')), item_name: btn.getAttribute('data-name') });
+            } else if (type === 'habit_change') {
+                runWhatIfScenario('habit_change', { daily_savings: parseFloat(btn.getAttribute('data-daily')) });
+            } else if (type === 'fixed_cost') {
+                runWhatIfScenario('fixed_cost', { cost_increase: parseFloat(btn.getAttribute('data-cost')) });
+            }
+        });
+    });
+
+    // Receipt Parser Handler
+    const parseBtn = document.getElementById('parseReceiptBtn');
+    if (parseBtn) {
+        parseBtn.addEventListener('click', async () => {
+            const text = document.getElementById('receiptInput').value.trim();
+            if (!text) {
+                showToast("Please paste receipt text", "warning");
+                return;
+            }
+            try {
+                const res = await fetch('/api/parse-receipt', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: text })
+                });
+                const data = await res.json();
+                document.getElementById('parsedAmount').value = data.amount || '';
+                document.getElementById('parsedDesc').value = data.merchant || 'Store Receipt';
+                document.getElementById('parsedDate').value = data.date || '{{ today_date }}';
+                document.getElementById('parsedCat').value = data.category || 'Food';
+                showToast("Receipt parsed successfully!", "success");
+            } catch (err) {
+                showToast("Error parsing receipt", "danger");
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

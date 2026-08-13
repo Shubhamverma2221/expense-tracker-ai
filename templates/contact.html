@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="contact-view" style="max-width: 900px; margin: 0 auto;">
+    <div style="text-align: center; margin-bottom: 3rem;">
+        <div class="hero-badge">
+            <span>📞 Support & Inquiries</span>
+        </div>
+        <h1 style="font-size: 2.5rem; font-weight: 800; color: var(--text-primary); letter-spacing: -0.03em;">
+            Get in Touch
+        </h1>
+        <p style="color: var(--text-muted); max-width: 600px; margin: 0.5rem auto 0;">
+            Have a question, feedback, or feature request? We would love to hear from you.
+        </p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 3fr 2fr; gap: 2rem;">
+        <!-- Contact Form Card -->
+        <div class="card">
+            <h3 class="card-title" style="margin-bottom: 1.25rem;">✉️ Send Us a Message</h3>
+            <form action="{{ url_for('contact_page') }}" method="POST">
+                <div class="form-group">
+                    <label class="form-label">Your Name</label>
+                    <input type="text" name="name" class="form-control" placeholder="e.g. Priya Sharma" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email Address</label>
+                    <input type="email" name="email" class="form-control" placeholder="name@example.com" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Subject</label>
+                    <input type="text" name="subject" class="form-control" placeholder="e.g. Feature Suggestion, Bug Report" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Message</label>
+                    <textarea name="message" class="form-control" rows="4" placeholder="How can we help you?" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary btn-lg" style="width: 100%; justify-content: center; margin-top: 0.5rem;">
+                    Submit Inquiry
+                </button>
+            </form>
+        </div>
+
+        <!-- FAQ Section -->
+        <div>
+            <div class="card" style="margin-bottom: 1.5rem;">
+                <h4 style="font-size: 1.05rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.4rem;">❓ Is my financial data private?</h4>
+                <p style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5;">
+                    Yes. All your data is stored locally in your SQLite database with isolated user sessions and password hashing.
+                </p>
+            </div>
+
+            <div class="card" style="margin-bottom: 1.5rem;">
+                <h4 style="font-size: 1.05rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.4rem;">🔮 How does the AI predictor work?</h4>
+                <p style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5;">
+                    It uses mathematical least-squares linear regression on your past 3 to 12 months of transactions to model future spend trends.
+                </p>
+            </div>
+
+            <div class="card">
+                <h4 style="font-size: 1.05rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.4rem;">📥 Can I export my records?</h4>
+                <p style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5;">
+                    Yes, anytime! You can export your full transaction log in both CSV and JSON formats from the Expenses or Settings pages.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

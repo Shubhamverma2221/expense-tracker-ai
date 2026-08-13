@@ -1,0 +1,232 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="predict-view">
+    <!-- Header -->
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">
+                <span>🔮 AI Spending Forecast & Budget Simulator</span>
+            </h1>
+            <p class="page-subtitle">Machine learning projection powered by least-squares linear regression modeling</p>
+        </div>
+
+        <!-- Lookback Months Selector -->
+        <form method="GET" action="{{ url_for('predict_page') }}" style="display: flex; align-items: center; gap: 0.5rem;">
+            <label style="font-size: 0.85rem; color: var(--text-muted);">Learning Horizon:</label>
+            <select name="months" class="form-select" style="width: auto;" onchange="this.form.submit()">
+                <option value="3" {% if months == 3 %}selected{% endif %}>Past 3 Months</option>
+                <option value="6" {% if months == 6 %}selected{% endif %}>Past 6 Months (Recommended)</option>
+                <option value="12" {% if months == 12 %}selected{% endif %}>Past 12 Months</option>
+            </select>
+        </form>
+    </div>
+
+    <!-- Forecast Headline Metrics -->
+    <div class="kpi-grid">
+        <div class="kpi-card accent-cyan">
+            <div>
+                <div class="kpi-label">Forecast for {{ forecast.predicted_month_label }}</div>
+                <div class="kpi-value">{{ currency }}{{ "%.2f"|format(forecast.total_next_month) }}</div>
+                <div class="kpi-subtext">
+                    <span>Recent average: {{ currency }}{{ "%.2f"|format(forecast.recent_average) }}</span>
+                </div>
+            </div>
+            <div class="kpi-icon-box" style="color: var(--info);">🔮</div>
+        </div>
+
+        <div class="kpi-card {% if forecast.trend == 'Increasing' %}accent-rose{% elif forecast.trend == 'Decreasing' %}accent-emerald{% else %}accent-amber{% endif %}">
+            <div>
+                <div class="kpi-label">Projected Spending Trend</div>
+                <div class="kpi-value" style="font-size: 1.6rem;">
+                    {{ '📈' if forecast.trend == 'Increasing' else ('📉' if forecast.trend == 'Decreasing' else '➡️') }} {{ forecast.trend }}
+                </div>
+                <div class="kpi-subtext">
+                    <span>{{ "%+0.1f"|format(forecast.trend_pct) }}% vs latest month</span>
+                </div>
+            </div>
+            <div class="kpi-icon-box">📊</div>
+        </div>
+
+        <div class="kpi-card accent-emerald">
+            <div>
+                <div class="kpi-label">Model Confidence Score</div>
+                <div class="kpi-value">{{ forecast.confidence_score }}%</div>
+                <div class="kpi-subtext" style="color: var(--accent);">
+                    <span>Based on statistical regression fit (R²)</span>
+                </div>
+            </div>
+            <div class="kpi-icon-box" style="color: var(--accent);">🎯</div>
+        </div>
+    </div>
+
+    <!-- Interactive Historical vs Predicted Chart -->
+    <div class="card" style="margin-bottom: 2rem;">
+        <div class="card-header">
+            <div>
+                <h3 class="card-title">📈 Historical Spending & AI Forecast Trajectory</h3>
+                <span style="font-size: 0.85rem; color: var(--text-muted);">Blue points indicate historical records; Purple indicates AI prediction</span>
+            </div>
+        </div>
+        <div class="chart-container" style="height: 320px;">
+            <canvas id="forecastChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Category Predictions Grid -->
+    <div class="card" style="margin-bottom: 2rem;">
+        <div class="card-header">
+            <h3 class="card-title">🏷️ Category-by-Category Forecast Breakdown</h3>
+        </div>
+
+        {% if forecast.per_category_next_month %}
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.25rem;">
+            {% for cat, amt in forecast.per_category_next_month.items()|sort(attribute='1', reverse=true) %}
+            <div style="padding: 1.25rem; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <span style="font-size: 1.5rem;">{{ cat_meta.get(cat, {}).get('icon', '🏷️') }}</span>
+                    <div>
+                        <strong style="font-size: 1rem; color: var(--text-primary);">{{ cat }}</strong>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">Projected Spend</div>
+                    </div>
+                </div>
+                <div style="text-align: right;">
+                    <span style="font-size: 1.15rem; font-weight: 800; color: var(--text-primary);">
+                        {{ currency }}{{ "%.2f"|format(amt) }}
+                    </span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">🔮</div>
+            <p class="empty-desc">Insufficient historical data to break down category projections.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- What-If Savings Scenario Simulator -->
+    <div class="card" style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(16, 185, 129, 0.08)); border: 1px solid var(--primary-light);">
+        <div class="card-header">
+            <div>
+                <h3 class="card-title">⚡ AI "What-If" Savings Target Simulator</h3>
+                <span style="font-size: 0.85rem; color: var(--text-muted);">Simulate budget adjustments to hit desired monthly savings</span>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 2rem; align-items: center;">
+            <div>
+                <label class="form-label" style="font-weight: 700;">Target Monthly Savings Goal:</label>
+                <div style="display: flex; align-items: center; gap: 1rem; margin: 1rem 0;">
+                    <input type="range" id="savingsSlider" min="5" max="40" step="5" value="15" style="flex: 1; accent-color: var(--accent);">
+                    <span id="savingsPctLabel" style="font-size: 1.25rem; font-weight: 800; color: var(--accent); min-width: 50px;">15%</span>
+                </div>
+                <p style="font-size: 0.85rem; color: var(--text-muted);">
+                    AI will recommend optimal spending caps on discretionary categories like Shopping and Food Delivery.
+                </p>
+            </div>
+
+            <div id="simulationResults" style="padding: 1.25rem; background: var(--bg-card); border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem;">
+                    <span>Projected Baseline:</span>
+                    <strong>{{ currency }}{{ "%.2f"|format(forecast.total_next_month) }}</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem; color: var(--accent);">
+                    <span>Estimated Monthly Savings:</span>
+                    <strong id="simSavingsAmt">{{ currency }}{{ "%.2f"|format(forecast.total_next_month * 0.15) }}</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding-top: 0.75rem; border-top: 1px solid var(--border-color); font-size: 1.05rem;">
+                    <span>Optimized Spending Cap:</span>
+                    <strong id="simTargetSpend" style="color: var(--primary);">{{ currency }}{{ "%.2f"|format(forecast.total_next_month * 0.85) }}</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+    const textColor = isDark ? '#94a3b8' : '#475569';
+    const gridColor = isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)';
+
+    // Forecast Chart
+    const forecastCtx = document.getElementById('forecastChart');
+    if (forecastCtx) {
+        const histMonths = {{ forecast.historical_months|tojson }};
+        const histValues = {{ forecast.historical_values|tojson }};
+        const predMonth = {{ forecast.predicted_month_label|tojson }};
+        const predValue = {{ forecast.total_next_month }};
+
+        const allLabels = [...histMonths, predMonth];
+        const actualSeries = [...histValues, null];
+        const forecastSeries = new Array(histMonths.length - 1).fill(null);
+        forecastSeries.push(histValues[histValues.length - 1], predValue);
+
+        new Chart(forecastCtx, {
+            type: 'line',
+            data: {
+                labels: allLabels,
+                datasets: [
+                    {
+                        label: 'Historical Spend ({{ currency }})',
+                        data: actualSeries,
+                        borderColor: '#6366f1',
+                        backgroundColor: 'rgba(99, 102, 241, 0.15)',
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 5,
+                        pointBackgroundColor: '#6366f1',
+                    },
+                    {
+                        label: 'AI Forecast Trajectory ({{ currency }})',
+                        data: forecastSeries,
+                        borderColor: '#ec4899',
+                        borderDash: [6, 6],
+                        backgroundColor: 'rgba(236, 72, 153, 0.1)',
+                        fill: true,
+                        pointRadius: 6,
+                        pointBackgroundColor: '#ec4899',
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: { color: textColor }
+                    }
+                },
+                scales: {
+                    x: { grid: { color: gridColor }, ticks: { color: textColor } },
+                    y: { grid: { color: gridColor }, ticks: { color: textColor } }
+                }
+            }
+        });
+    }
+
+    // Savings Slider Logic
+    const slider = document.getElementById('savingsSlider');
+    const label = document.getElementById('savingsPctLabel');
+    const simSavingsAmt = document.getElementById('simSavingsAmt');
+    const simTargetSpend = document.getElementById('simTargetSpend');
+    const baseTotal = {{ forecast.total_next_month }};
+    const currSymbol = {{ currency|tojson }};
+
+    if (slider) {
+        slider.addEventListener('input', () => {
+            const pct = parseInt(slider.value, 10);
+            label.textContent = `${pct}%`;
+            const saved = (baseTotal * pct) / 100;
+            const target = baseTotal - saved;
+            simSavingsAmt.textContent = `${currSymbol}${saved.toFixed(2)}`;
+            simTargetSpend.textContent = `${currSymbol}${target.toFixed(2)}`;
+        });
+    }
+});
+</script>
+{% endblock %}

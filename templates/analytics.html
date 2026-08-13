@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="analytics-view">
+    <!-- Header -->
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">
+                <span>📈 Deep Financial Analytics</span>
+            </h1>
+            <p class="page-subtitle">Granular behavioral spending breakdown and statistical distributions</p>
+        </div>
+
+        <!-- Period Switcher Buttons -->
+        <div style="display: flex; gap: 0.4rem; background: var(--bg-surface); padding: 4px; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+            <a href="{{ url_for('analytics_page', period='week') }}" class="btn btn-sm {% if period == 'week' %}btn-primary{% else %}btn-secondary{% endif %}">This Week</a>
+            <a href="{{ url_for('analytics_page', period='month') }}" class="btn btn-sm {% if period == 'month' %}btn-primary{% else %}btn-secondary{% endif %}">This Month</a>
+            <a href="{{ url_for('analytics_page', period='year') }}" class="btn btn-sm {% if period == 'year' %}btn-primary{% else %}btn-secondary{% endif %}">This Year</a>
+            <a href="{{ url_for('analytics_page', period='all') }}" class="btn btn-sm {% if period == 'all' %}btn-primary{% else %}btn-secondary{% endif %}">All Time</a>
+        </div>
+    </div>
+
+    <!-- Analytics KPI Cards -->
+    <div class="kpi-grid">
+        <div class="kpi-card accent-rose">
+            <div>
+                <div class="kpi-label">Period Total Spend</div>
+                <div class="kpi-value">{{ currency }}{{ "%.2f"|format(summary.total) }}</div>
+                <div class="kpi-subtext">Across {{ summary.count }} transactions</div>
+            </div>
+            <div class="kpi-icon-box" style="color: var(--danger);">💸</div>
+        </div>
+
+        <div class="kpi-card accent-amber">
+            <div>
+                <div class="kpi-label">Daily Average Spend</div>
+                <div class="kpi-value">{{ currency }}{{ "%.2f"|format(summary.daily_average) }}</div>
+                <div class="kpi-subtext">Per active day</div>
+            </div>
+            <div class="kpi-icon-box" style="color: var(--warning);">📅</div>
+        </div>
+
+        <div class="kpi-card accent-cyan">
+            <div>
+                <div class="kpi-label">Average Per Transaction</div>
+                <div class="kpi-value">
+                    {{ currency }}{{ "%.2f"|format((summary.total / summary.count) if summary.count > 0 else 0) }}
+                </div>
+                <div class="kpi-subtext">Average ticket size</div>
+            </div>
+            <div class="kpi-icon-box" style="color: var(--info);">🏷️</div>
+        </div>
+
+        <div class="kpi-card accent-emerald">
+            <div>
+                <div class="kpi-label">Dominant Category</div>
+                <div class="kpi-value" style="font-size: 1.4rem;">
+                    {{ (summary.by_category|dictsort(by='value', reverse=true))[0][0] if summary.by_category else 'None' }}
+                </div>
+                <div class="kpi-subtext" style="color: var(--accent);">Highest expense category</div>
+            </div>
+            <div class="kpi-icon-box" style="color: var(--accent);">🏆</div>
+        </div>
+    </div>
+
+    <!-- Analytics Charts Grid -->
+    <div class="charts-grid">
+        <!-- Weekday Distribution Chart -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">📅 Spending by Day of Week</h3>
+                <span style="font-size: 0.85rem; color: var(--text-muted);">Identify peak spending days</span>
+            </div>
+            <div class="chart-container">
+                <canvas id="weekdayChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Payment Method Distribution Chart -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">💳 Payment Method Distribution</h3>
+                <span style="font-size: 0.85rem; color: var(--text-muted);">UPI vs Card vs Cash</span>
+            </div>
+            <div class="chart-container" style="display: flex; align-items: center; justify-content: center;">
+                <canvas id="paymentChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Category Efficiency Matrix Table -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">📊 Category Spending Matrix</h3>
+        </div>
+
+        {% if summary.by_category %}
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Category</th>
+                        <th>Total Spent</th>
+                        <th>Share of Budget</th>
+                        <th>Transactions</th>
+                        <th>Avg / Transaction</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cat, amt in summary.by_category.items()|sort(attribute='1', reverse=true) %}
+                    {% set cat_count = summary.by_category_counts.get(cat, 1) %}
+                    {% set share_pct = (amt / summary.total * 100) if summary.total > 0 else 0 %}
+                    <tr>
+                        <td>
+                            <span class="badge" style="background: {{ cat_meta.get(cat, {}).get('bg', 'rgba(255,255,255,0.1)') }}; color: {{ cat_meta.get(cat, {}).get('color', 'var(--text-primary)') }}; font-size: 0.85rem;">
+                                {{ cat_meta.get(cat, {}).get('icon', '🏷️') }} {{ cat }}
+                            </span>
+                        </td>
+                        <td><strong style="color: var(--text-primary);">{{ currency }}{{ "%.2f"|format(amt) }}</strong></td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <div style="flex: 1; height: 6px; background: var(--bg-input); border-radius: var(--radius-full); max-width: 120px;">
+                                    <div style="width: {{ share_pct }}%; height: 100%; background: var(--primary); border-radius: var(--radius-full);"></div>
+                                </div>
+                                <span style="font-size: 0.82rem; color: var(--text-muted);">{{ "%.1f"|format(share_pct) }}%</span>
+                            </div>
+                        </td>
+                        <td>{{ cat_count }}</td>
+                        <td>{{ currency }}{{ "%.2f"|format(amt / cat_count) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">📊</div>
+            <p class="empty-desc">No expense records found for this period.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+    const textColor = isDark ? '#94a3b8' : '#334155';
+    const gridColor = isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.08)';
+
+    // Weekday Spending Bar Chart
+    const weekdayCtx = document.getElementById('weekdayChart');
+    if (weekdayCtx) {
+        const weekdayData = {{ weekday_dist|tojson }};
+        new Chart(weekdayCtx, {
+            type: 'bar',
+            data: {
+                labels: Object.keys(weekdayData),
+                datasets: [{
+                    label: 'Spent ({{ currency }})',
+                    data: Object.values(weekdayData),
+                    backgroundColor: 'rgba(16, 185, 129, 0.75)',
+                    hoverBackgroundColor: '#10b981',
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { display: false }, ticks: { color: textColor } },
+                    y: { grid: { color: gridColor }, ticks: { color: textColor } }
+                }
+            }
+        });
+    }
+
+    // Payment Method Donut Chart
+    const payCtx = document.getElementById('paymentChart');
+    if (payCtx) {
+        const payData = {{ summary.by_payment|tojson }};
+        new Chart(payCtx, {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(payData),
+                datasets: [{
+                    data: Object.values(payData),
+                    backgroundColor: ['#6366f1', '#ec4899', '#f59e0b', '#10b981', '#38bdf8'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '65%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { color: textColor, padding: 10 }
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

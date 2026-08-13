@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="admin-view">
+    <!-- Header -->
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">
+                <span>🛡️ Platform Administration & Metrics</span>
+            </h1>
+            <p class="page-subtitle">Platform-wide user management, system activity logs, and inquiry inbox</p>
+        </div>
+        <span class="badge" style="background: var(--danger-light); color: var(--danger); font-size: 0.85rem;">
+            Admin Access Level
+        </span>
+    </div>
+
+    <!-- Admin KPI Cards -->
+    <div class="kpi-grid">
+        <div class="kpi-card accent-cyan">
+            <div>
+                <div class="kpi-label">Registered Users</div>
+                <div class="kpi-value">{{ admin_metrics.total_users }}</div>
+                <div class="kpi-subtext">Active accounts</div>
+            </div>
+            <div class="kpi-icon-box" style="color: var(--info);">👥</div>
+        </div>
+
+        <div class="kpi-card accent-rose">
+            <div>
+                <div class="kpi-label">Total Transactions</div>
+                <div class="kpi-value">{{ admin_metrics.total_expenses_count }}</div>
+                <div class="kpi-subtext">Platform-wide logs</div>
+            </div>
+            <div class="kpi-icon-box" style="color: var(--danger);">🧾</div>
+        </div>
+
+        <div class="kpi-card accent-emerald">
+            <div>
+                <div class="kpi-label">Total Platform Volume</div>
+                <div class="kpi-value">{{ currency }}{{ "%.2f"|format(admin_metrics.total_platform_spend) }}</div>
+                <div class="kpi-subtext" style="color: var(--accent);">Cumulative expenses tracked</div>
+            </div>
+            <div class="kpi-icon-box" style="color: var(--accent);">💰</div>
+        </div>
+
+        <div class="kpi-card accent-amber">
+            <div>
+                <div class="kpi-label">Support Tickets</div>
+                <div class="kpi-value">{{ admin_metrics.total_messages }}</div>
+                <div class="kpi-subtext">Contact inquiries</div>
+            </div>
+            <div class="kpi-icon-box" style="color: var(--warning);">📬</div>
+        </div>
+    </div>
+
+    <!-- User Management Table Card -->
+    <div class="card" style="margin-bottom: 2rem;">
+        <div class="card-header">
+            <h3 class="card-title">👥 User Directory & Activity</h3>
+        </div>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Currency</th>
+                        <th>Expenses</th>
+                        <th>Total Tracked</th>
+                        <th>Joined</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in admin_metrics.users %}
+                    <tr>
+                        <td><code>#{{ u.id }}</code></td>
+                        <td><strong style="color: var(--text-primary);">{{ u.name }}</strong></td>
+                        <td>{{ u.email }}</td>
+                        <td>
+                            <span class="badge" style="background: {% if u.role == 'admin' %}var(--danger-light); color: var(--danger){% else %}var(--primary-light); color: var(--primary){% endif %};">
+                                {{ u.role.upper() }}
+                            </span>
+                        </td>
+                        <td>{{ u.currency }}</td>
+                        <td>{{ u.expense_count }}</td>
+                        <td>{{ u.currency }}{{ "%.2f"|format(u.total_spent) }}</td>
+                        <td><small>{{ u.created_at[:10] }}</small></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Support Messages & Audit Logs Grid -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+        <!-- Contact Inquiries -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">📬 Recent Inquiries & Feedback</h3>
+            </div>
+            {% if admin_metrics.messages %}
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                {% for msg in admin_metrics.messages %}
+                <div style="padding: 1rem; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                        <strong style="color: var(--text-primary);">{{ msg.name }}</strong>
+                        <small style="color: var(--text-muted);">{{ msg.created_at[:10] }}</small>
+                    </div>
+                    <div style="font-size: 0.85rem; color: var(--primary); margin-bottom: 0.35rem;">{{ msg.subject }}</div>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary);">{{ msg.message }}</p>
+                    <small style="color: var(--text-muted); font-size: 0.78rem;">From: {{ msg.email }}</small>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state" style="padding: 2rem 0;">
+                <p class="empty-desc">No support inquiries received yet.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Audit Activity Logs -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">📜 Security Audit Log</h3>
+            </div>
+            {% if admin_metrics.recent_logs %}
+            <div style="display: flex; flex-direction: column; gap: 0.6rem;">
+                {% for log in admin_metrics.recent_logs %}
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0.85rem; background: var(--bg-surface); border-radius: var(--radius-sm); font-size: 0.82rem;">
+                    <div>
+                        <span style="color: var(--text-primary); font-weight: 600;">{{ log.action }}</span>
+                        <div style="color: var(--text-muted); font-size: 0.75rem;">{{ log.user_email or 'System' }} • {{ log.ip_address }}</div>
+                    </div>
+                    <small style="color: var(--text-muted);">{{ log.created_at[11:19] }}</small>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state" style="padding: 2rem 0;">
+                <p class="empty-desc">No system audit events recorded.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

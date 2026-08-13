@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="chat-view" style="max-width: 860px; margin: 0 auto;">
+    <!-- Header -->
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">
+                <span>💬 AI Financial Copilot</span>
+            </h1>
+            <p class="page-subtitle">Log transactions naturally, analyze spending patterns, and get personalized financial advice</p>
+        </div>
+    </div>
+
+    <!-- Suggested Prompts Chips -->
+    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.25rem;">
+        <button class="btn btn-secondary btn-sm prompt-chip" data-prompt="Spent 350 on lunch today">🍔 "Spent 350 on lunch today"</button>
+        <button class="btn btn-secondary btn-sm prompt-chip" data-prompt="How is my budget doing?">🎯 "How is my budget doing?"</button>
+        <button class="btn btn-secondary btn-sm prompt-chip" data-prompt="Show summary this month">📊 "Show summary this month"</button>
+        <button class="btn btn-secondary btn-sm prompt-chip" data-prompt="Predict next month spend">🔮 "Predict next month spend"</button>
+        <button class="btn btn-secondary btn-sm prompt-chip" data-prompt="Give me a savings tip">💡 "Give me a savings tip"</button>
+    </div>
+
+    <!-- Chat Card Container -->
+    <div class="card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column; height: 580px;">
+        <!-- Message History Body -->
+        <div id="fullChatBody" style="flex: 1; padding: 1.5rem; overflow-y: auto; display: flex; flex-direction: column; gap: 1rem;">
+            <div class="chat-bubble bot">
+                👋 <strong>Hello! I'm your AI Financial Copilot.</strong><br>
+                You can talk to me in natural language to record expenses, inspect budget limits, or forecast future trends. Try one of the suggested prompts above!
+            </div>
+            {% if response and user_text %}
+            <div class="chat-bubble user">
+                {{ user_text }}
+            </div>
+            <div class="chat-bubble bot">
+                {{ response|replace('\n', '<br>')|safe }}
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Input Bar Form -->
+        <div style="padding: 1rem 1.25rem; background: var(--bg-surface); border-top: 1px solid var(--border-color);">
+            <form id="fullChatForm" style="display: flex; gap: 0.75rem;">
+                <input type="text" id="fullChatInput" class="form-control" placeholder="Type a message (e.g. 'spent 1200 on fuel' or 'budget check')..." autocomplete="off" autofocus>
+                <button type="submit" class="btn btn-primary btn-lg">
+                    <span>Send 🚀</span>
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const chatBody = document.getElementById('fullChatBody');
+    const chatForm = document.getElementById('fullChatForm');
+    const chatInput = document.getElementById('fullChatInput');
+    const chips = document.querySelectorAll('.prompt-chip');
+
+    // Handle suggested chips
+    chips.forEach(chip => {
+        chip.addEventListener('click', () => {
+            const prompt = chip.getAttribute('data-prompt');
+            if (prompt && chatInput) {
+                chatInput.value = prompt;
+                chatForm.dispatchEvent(new Event('submit'));
+            }
+        });
+    });
+
+    if (chatForm && chatInput && chatBody) {
+        chatForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const text = chatInput.value.trim();
+            if (!text) return;
+
+            // User bubble
+            appendChatBubble(chatBody, text, 'user');
+            chatInput.value = '';
+
+            // Loading state
+            const loadingId = 'full-loading-' + Date.now();
+            appendChatBubble(chatBody, 'Analyzing request...', 'bot', loadingId);
+
+            try {
+                const res = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: text })
+                });
+                const data = await res.json();
+
+                const loadingEl = document.getElementById(loadingId);
+                if (loadingEl) loadingEl.remove();
+
+                appendChatBubble(chatBody, data.response || "No response received.", 'bot');
+            } catch (err) {
+                const loadingEl = document.getElementById(loadingId);
+                if (loadingEl) loadingEl.remove();
+                appendChatBubble(chatBody, "⚠️ Network connection error. Please retry.", 'bot');
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

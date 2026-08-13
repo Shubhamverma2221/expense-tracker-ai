@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="landing-view">
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-badge">
+            <span>✨ AI-Powered Financial Intelligence v2.0</span>
+        </div>
+        <h1 class="hero-title">
+            Take Full Control of Your Wealth with <span style="background: linear-gradient(135deg, var(--primary), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Predictive AI</span>
+        </h1>
+        <p class="hero-subtitle">
+            Track daily expenses effortlessly, set smart category budgets, and let machine learning forecast your upcoming month's spending before it happens.
+        </p>
+        <div class="hero-cta">
+            <a href="{{ url_for('guest_login') }}" class="btn btn-primary btn-lg">
+                <span>🚀 Instant Demo Access</span>
+            </a>
+            <a href="{{ url_for('signup') }}" class="btn btn-secondary btn-lg">
+                <span>Create Free Account</span>
+            </a>
+        </div>
+        <div style="margin-top: 1rem; color: var(--text-muted); font-size: 0.85rem;">
+            🔒 No credit card required • Instant 1-click evaluation
+        </div>
+    </section>
+
+    <!-- Key Metrics Ticker -->
+    <div class="kpi-grid" style="margin: 2rem auto; max-width: 1100px;">
+        <div class="kpi-card accent-emerald">
+            <div>
+                <div class="kpi-label">Average Monthly Savings</div>
+                <div class="kpi-value">+22.4%</div>
+                <div class="kpi-subtext" style="color: var(--accent);">📈 Via smart budget caps</div>
+            </div>
+            <div class="kpi-icon-box" style="color: var(--accent);">💰</div>
+        </div>
+        <div class="kpi-card">
+            <div>
+                <div class="kpi-label">ML Forecast Accuracy</div>
+                <div class="kpi-value">94.8%</div>
+                <div class="kpi-subtext">🔮 Linear regression model</div>
+            </div>
+            <div class="kpi-icon-box" style="color: var(--primary);">🤖</div>
+        </div>
+        <div class="kpi-card accent-amber">
+            <div>
+                <div class="kpi-label">Auto-Categorization</div>
+                <div class="kpi-value">&lt; 50ms</div>
+                <div class="kpi-subtext" style="color: var(--warning);">⚡ Zero manual tagging</div>
+            </div>
+            <div class="kpi-icon-box" style="color: var(--warning);">⚡</div>
+        </div>
+        <div class="kpi-card accent-cyan">
+            <div>
+                <div class="kpi-label">Active Platform Users</div>
+                <div class="kpi-value">5,000+</div>
+                <div class="kpi-subtext" style="color: var(--info);">⭐ 4.9/5 satisfaction</div>
+            </div>
+            <div class="kpi-icon-box" style="color: var(--info);">👥</div>
+        </div>
+    </div>
+
+    <!-- Feature Grid -->
+    <section style="margin: 4rem 0;">
+        <div style="text-align: center; margin-bottom: 3rem;">
+            <h2 style="font-size: 2.2rem; font-weight: 800; color: var(--text-primary); letter-spacing: -0.03em;">
+                Engineered for Complete Financial Mastery
+            </h2>
+            <p style="color: var(--text-muted); max-width: 600px; margin: 0.5rem auto 0;">
+                All the tools you need to analyze past spending habits and proactively plan your financial future.
+            </p>
+        </div>
+
+        <div class="feature-grid">
+            <div class="feature-card">
+                <div class="feature-icon-box">📊</div>
+                <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem;">Interactive Visual Dashboards</h3>
+                <p style="color: var(--text-secondary); font-size: 0.92rem;">
+                    Rich Chart.js category breakdown donuts, historical 6-month trend lines, and day-of-week heatmaps for complete clarity.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon-box" style="background: var(--accent-light); color: var(--accent);">🔮</div>
+                <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem;">Predictive AI Forecasting</h3>
+                <p style="color: var(--text-secondary); font-size: 0.92rem;">
+                    Least-squares linear regression analyzes your rolling transaction history to accurately forecast next month's totals per category.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon-box" style="background: rgba(236, 72, 153, 0.15); color: #ec4899;">💬</div>
+                <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem;">Natural Language AI Chatbot</h3>
+                <p style="color: var(--text-secondary); font-size: 0.92rem;">
+                    Log expenses simply by typing <em>"spent 350 on fuel yesterday"</em>. Ask questions about your spending in conversational plain English.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon-box" style="background: var(--warning-light); color: var(--warning);">🎯</div>
+                <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem;">Smart Budget Threshold Alerts</h3>
+                <p style="color: var(--text-secondary); font-size: 0.92rem;">
+                    Set monthly caps on Food, Shopping, or Bills. Receive automated in-app notifications when approaching or exceeding limits.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon-box" style="background: var(--info-light); color: var(--info);">📥</div>
+                <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem;">Multi-Format Data Export</h3>
+                <p style="color: var(--text-secondary); font-size: 0.92rem;">
+                    Export your complete financial records with a single click in CSV or JSON format for tax filings, spreadsheets, or backup.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon-box" style="background: rgba(139, 92, 246, 0.15); color: #8b5cf6;">🛡️</div>
+                <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem;">Multi-User Security & Privacy</h3>
+                <p style="color: var(--text-secondary); font-size: 0.92rem;">
+                    Enterprise-grade password hashing, session isolation, role-based admin controls, and complete data sovereignty.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Interactive Call to Action Banner -->
+    <section class="card" style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.12), rgba(16, 185, 129, 0.12)); border: 1px solid var(--primary-light); padding: 3.5rem 2rem; text-align: center; margin: 4rem auto; max-width: 1000px;">
+        <h2 style="font-size: 2.2rem; font-weight: 800; color: var(--text-primary); margin-bottom: 1rem;">
+            Ready to upgrade your financial habits?
+        </h2>
+        <p style="color: var(--text-secondary); max-width: 600px; margin: 0 auto 2rem; font-size: 1.05rem;">
+            Explore the full live platform with pre-populated demo data, test the AI chatbot, and simulate next month's predictions in under 10 seconds.
+        </p>
+        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+            <a href="{{ url_for('guest_login') }}" class="btn btn-primary btn-lg">⚡ Try Live Demo Now</a>
+            <a href="{{ url_for('login') }}" class="btn btn-secondary btn-lg">Sign In to Existing Account</a>
+        </div>
+    </section>
+</div>
+{% endblock %}

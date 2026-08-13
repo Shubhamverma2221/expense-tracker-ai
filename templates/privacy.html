@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="legal-view" style="max-width: 800px; margin: 0 auto;">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">
+                <span>📄 Privacy Policy</span>
+            </h1>
+            <p class="page-subtitle">Last updated: August 2026</p>
+        </div>
+    </div>
+
+    <div class="card" style="padding: 2.5rem; line-height: 1.8; color: var(--text-secondary);">
+        <h3 style="color: var(--text-primary); margin-bottom: 0.75rem;">1. Information We Collect</h3>
+        <p style="margin-bottom: 1.5rem;">
+            ExpenseAI collects user-provided data such as email addresses, hashed passwords, currency preferences, transaction details (dates, amounts, categories, notes), and budget limits solely to provide financial intelligence services.
+        </p>
+
+        <h3 style="color: var(--text-primary); margin-bottom: 0.75rem;">2. How Your Data Is Stored & Protected</h3>
+        <p style="margin-bottom: 1.5rem;">
+            All credentials are protected using salted password hashes generated via standard Werkzeug / PBKDF2 cryptographic algorithms. Financial data is stored in isolated user partitions.
+        </p>
+
+        <h3 style="color: var(--text-primary); margin-bottom: 0.75rem;">3. Data Ownership & Export</h3>
+        <p style="margin-bottom: 1.5rem;">
+            You retain 100% ownership of your financial records. You may export your entire transaction history in CSV or JSON format at any time or permanently delete your account and all associated data from the Settings page.
+        </p>
+
+        <h3 style="color: var(--text-primary); margin-bottom: 0.75rem;">4. Third-Party Sharing</h3>
+        <p>
+            We do not sell, rent, or monetize your personal or financial transaction data to third parties or advertisers.
+        </p>
+    </div>
+</div>
+{% endblock %}

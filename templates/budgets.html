@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="budgets-view">
+    <!-- Header -->
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">
+                <span>🎯 Monthly Budgets & Limits</span>
+            </h1>
+            <p class="page-subtitle">Set monthly category spending caps to keep expenses within targets</p>
+        </div>
+    </div>
+
+    <!-- Overview Stats Grid -->
+    <div class="kpi-grid">
+        <div class="kpi-card accent-cyan">
+            <div>
+                <div class="kpi-label">Total Budget Target</div>
+                <div class="kpi-value">{{ currency }}{{ "%.2f"|format(total_allocated_budget) }}</div>
+                <div class="kpi-subtext">Across {{ budgets|length }} tracked categories</div>
+            </div>
+            <div class="kpi-icon-box" style="color: var(--info);">🎯</div>
+        </div>
+
+        <div class="kpi-card accent-rose">
+            <div>
+                <div class="kpi-label">Total Spent This Month</div>
+                <div class="kpi-value">{{ currency }}{{ "%.2f"|format(total_budget_spent) }}</div>
+                <div class="kpi-subtext">
+                    <strong style="color: {% if budget_utilization_pct > 90 %}var(--danger){% else %}var(--accent){% endif %};">
+                        {{ budget_utilization_pct }}% utilized
+                    </strong>
+                </div>
+            </div>
+            <div class="kpi-icon-box" style="color: var(--danger);">💸</div>
+        </div>
+
+        <div class="kpi-card accent-emerald">
+            <div>
+                <div class="kpi-label">Remaining Safe Spend</div>
+                <div class="kpi-value">{{ currency }}{{ "%.2f"|format(total_budget_remaining) }}</div>
+                <div class="kpi-subtext" style="color: var(--accent);">Available until month end</div>
+            </div>
+            <div class="kpi-icon-box" style="color: var(--accent);">🛡️</div>
+        </div>
+    </div>
+
+    <!-- Budgets Grid & Add Budget Form -->
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-bottom: 3rem;">
+        <!-- Category Budgets List -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">📊 Category Limits & Health</h3>
+                <span style="font-size: 0.85rem; color: var(--text-muted);">Current Month: {{ current_month_str }}</span>
+            </div>
+
+            {% if budgets and budgets|length > 0 %}
+            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                {% for b in budgets %}
+                <div style="padding: 1.15rem; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
+                        <div style="display: flex; align-items: center; gap: 0.6rem;">
+                            <span style="font-size: 1.3rem;">{{ cat_meta.get(b.category, {}).get('icon', '🏷️') }}</span>
+                            <div>
+                                <strong style="font-size: 1rem; color: var(--text-primary);">{{ b.category }}</strong>
+                                {% if b.is_exceeded %}
+                                <span class="badge" style="background: var(--danger-light); color: var(--danger); margin-left: 0.5rem;">🚨 Exceeded</span>
+                                {% elif b.percentage >= 80 %}
+                                <span class="badge" style="background: var(--warning-light); color: var(--warning); margin-left: 0.5rem;">⚠️ Warning</span>
+                                {% else %}
+                                <span class="badge" style="background: var(--accent-light); color: var(--accent); margin-left: 0.5rem;">🟢 On Track</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <span style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary);">
+                                {{ currency }}{{ "%.2f"|format(b.spent) }} <span style="font-weight: 400; color: var(--text-muted);">/ {{ currency }}{{ "%.2f"|format(b.limit_amount) }}</span>
+                            </span>
+                            <form action="{{ url_for('delete_budget_route', budget_id=b.id) }}" method="POST" onsubmit="return confirm('Remove budget for {{ b.category }}?');">
+                                <button type="submit" class="btn btn-danger btn-sm" title="Delete Limit">✕</button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Progress Bar -->
+                    <div style="width: 100%; height: 10px; background: var(--bg-input); border-radius: var(--radius-full); overflow: hidden; margin-bottom: 0.4rem;">
+                        <div style="width: {{ b.percentage }}%; height: 100%; background: {% if b.percentage >= 100 %}var(--danger){% elif b.percentage >= 75 %}var(--warning){% else %}var(--accent){% endif %}; border-radius: var(--radius-full); transition: width 0.6s ease;"></div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted);">
+                        <span>{{ b.percentage }}% utilized</span>
+                        <span>Remaining: {{ currency }}{{ "%.2f"|format(b.remaining) }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">🎯</div>
+                <h4 class="empty-title">No Category Budgets Set</h4>
+                <p class="empty-desc">Create your first category budget using the form on the right.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Add / Update Budget Form Card -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">➕ Set Category Budget</h3>
+            </div>
+            <form action="{{ url_for('budgets_page') }}" method="POST">
+                <input type="hidden" name="action" value="set_budget">
+                <div class="form-group">
+                    <label class="form-label">Category</label>
+                    <select name="category" class="form-select" required>
+                        {% for cat in ['Food', 'Travel', 'Shopping', 'Bills', 'Entertainment', 'Health', 'Education', 'Investments', 'Other'] %}
+                        <option value="{{ cat }}">{{ cat_meta.get(cat, {}).get('icon', '🏷️') }} {{ cat }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Monthly Limit ({{ currency }})</label>
+                    <input type="number" step="100" min="100" name="limit_amount" class="form-control" placeholder="e.g. 5000" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; margin-top: 1rem;">
+                    💾 Save Budget Target
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Recurring Expenses & Subscriptions Card -->
+    <div class="card">
+        <div class="card-header">
+            <div>
+                <h3 class="card-title">🔁 Scheduled Recurring Subscriptions & Bills</h3>
+                <span style="font-size: 0.85rem; color: var(--text-muted);">Automated bill reminders and tracking</span>
+            </div>
+        </div>
+
+        {% if recurring and recurring|length > 0 %}
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Subscription / Bill</th>
+                        <th>Category</th>
+                        <th>Frequency</th>
+                        <th>Next Due Date</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th style="text-align: right;">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in recurring %}
+                    <tr>
+                        <td><strong style="color: var(--text-primary);">{{ r.description }}</strong></td>
+                        <td>
+                            <span class="badge" style="background: {{ cat_meta.get(r.category, {}).get('bg', 'rgba(255,255,255,0.1)') }}; color: {{ cat_meta.get(r.category, {}).get('color', 'var(--text-primary)') }};">
+                                {{ cat_meta.get(r.category, {}).get('icon', '🏷️') }} {{ r.category }}
+                            </span>
+                        </td>
+                        <td>{{ r.frequency }}</td>
+                        <td><code>{{ r.next_due_date }}</code></td>
+                        <td><strong>{{ currency }}{{ "%.2f"|format(r.amount) }}</strong></td>
+                        <td>
+                            {% if r.is_active %}
+                            <span class="badge" style="background: var(--accent-light); color: var(--accent);">Active</span>
+                            {% else %}
+                            <span class="badge" style="background: var(--bg-input); color: var(--text-muted);">Paused</span>
+                            {% endif %}
+                        </td>
+                        <td style="text-align: right;">
+                            <form action="{{ url_for('delete_recurring_route', recurring_id=r.id) }}" method="POST" style="display: inline;">
+                                <button type="submit" class="btn btn-danger btn-sm" title="Delete">🗑️</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state" style="padding: 2rem 0;">
+            <p class="empty-desc">No recurring subscriptions configured.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

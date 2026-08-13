@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="AI Expense Tracker & Financial Intelligence Platform - Track spending, set category budgets, forecast next month expenses with AI, and chat with your financial assistant.">
+    <title>{{ title or 'AI Expense Tracker & Intelligence' }}</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+
+    <!-- Sticky Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="{{ url_for('index') if session.get('user_id') else url_for('landing') }}" class="brand">
+                <div class="brand-icon">⚡</div>
+                <span>ExpenseAI</span>
+            </a>
+
+            <!-- Navigation Links -->
+            {% if session.get('user_id') %}
+            <ul class="nav-links">
+                <li><a href="{{ url_for('dashboard') }}" class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}">📊 Dashboard</a></li>
+                <li><a href="{{ url_for('list_expenses') }}" class="nav-link {% if request.endpoint == 'list_expenses' %}active{% endif %}">📋 Expenses</a></li>
+                <li><a href="{{ url_for('budgets_page') }}" class="nav-link {% if request.endpoint == 'budgets_page' %}active{% endif %}">🎯 Budgets</a></li>
+                <li><a href="{{ url_for('decision_studio_page') }}" class="nav-link {% if request.endpoint == 'decision_studio_page' %}active{% endif %}">🧠 Decision Studio</a></li>
+                <li><a href="{{ url_for('analytics_page') }}" class="nav-link {% if request.endpoint == 'analytics_page' %}active{% endif %}">📈 Analytics</a></li>
+                <li><a href="{{ url_for('predict_page') }}" class="nav-link {% if request.endpoint == 'predict_page' %}active{% endif %}">🔮 Forecast</a></li>
+                <li><a href="{{ url_for('chat_page') }}" class="nav-link {% if request.endpoint == 'chat_page' %}active{% endif %}">💬 AI Chat</a></li>
+                {% if session.get('user_role') == 'admin' %}
+                <li><a href="{{ url_for('admin_page') }}" class="nav-link {% if request.endpoint == 'admin_page' %}active{% endif %}">🛡️ Admin</a></li>
+                {% endif %}
+            </ul>
+            {% else %}
+            <ul class="nav-links">
+                <li><a href="{{ url_for('landing') }}" class="nav-link">Home</a></li>
+                <li><a href="{{ url_for('features_page') }}" class="nav-link">Features</a></li>
+                <li><a href="{{ url_for('about_page') }}" class="nav-link">About</a></li>
+                <li><a href="{{ url_for('contact_page') }}" class="nav-link">Contact</a></li>
+            </ul>
+            {% endif %}
+
+            <!-- Right Actions -->
+            <div class="nav-actions">
+                <!-- Theme Switcher -->
+                <button id="themeToggleBtn" class="btn-icon" title="Toggle Theme">☀️</button>
+
+                {% if session.get('user_id') %}
+                <!-- Quick Add Expense Trigger Button -->
+                <button class="btn btn-primary btn-sm" data-open-modal="quickAddModal">
+                    <span>➕ Add</span>
+                </button>
+
+                <!-- Notifications Bell -->
+                <a href="{{ url_for('notifications_page') }}" class="btn-icon" title="Notifications" style="position: relative;">
+                    🔔
+                    {% if unread_notifs_count and unread_notifs_count > 0 %}
+                    <span style="position: absolute; top: -3px; right: -3px; width: 18px; height: 18px; border-radius: 50%; background: var(--danger); color: white; font-size: 0.65rem; font-weight: bold; display: flex; align-items: center; justify-content: center;">
+                        {{ unread_notifs_count }}
+                    </span>
+                    {% endif %}
+                </a>
+
+                <!-- User Dropdown Menu -->
+                <div class="user-dropdown">
+                    <button id="userMenuBtn" class="user-btn">
+                        <div class="user-avatar">{{ (session.get('user_name', 'U'))[:1].upper() }}</div>
+                        <span>{{ (session.get('user_name', 'User')).split(' ')[0] }}</span>
+                        <small>▾</small>
+                    </button>
+                    <div id="userDropdownMenu" class="dropdown-menu">
+                        <div style="padding: 0.5rem 0.8rem; font-size: 0.8rem; color: var(--text-muted);">
+                            Signed in as<br><strong style="color: var(--text-primary);">{{ session.get('user_email') }}</strong>
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <a href="{{ url_for('profile_page') }}" class="dropdown-item">👤 Profile</a>
+                        <a href="{{ url_for('settings_page') }}" class="dropdown-item">⚙️ Settings</a>
+                        <a href="{{ url_for('about_page') }}" class="dropdown-item">ℹ️ About Project</a>
+                        {% if session.get('user_role') == 'admin' %}
+                        <a href="{{ url_for('admin_page') }}" class="dropdown-item" style="color: var(--primary);">🛡️ Admin Panel</a>
+                        {% endif %}
+                        <div class="dropdown-divider"></div>
+                        <a href="{{ url_for('logout') }}" class="dropdown-item" style="color: var(--danger);">🚪 Logout</a>
+                    </div>
+                </div>
+                {% else %}
+                <!-- Guest / Login Actions -->
+                <a href="{{ url_for('login') }}" class="btn btn-secondary btn-sm">Log In</a>
+                <a href="{{ url_for('signup') }}" class="btn btn-primary btn-sm">Get Started</a>
+                {% endif %}
+
+                <!-- Mobile Navigation Hamburger -->
+                <button id="mobileToggle" class="btn-icon mobile-toggle">☰</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main View Content Block -->
+    <main class="container">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Floating AI Assistant Widget (Available on all authenticated pages) -->
+    {% if session.get('user_id') %}
+    <button id="floatingChatBtn" class="floating-chat-btn" title="Ask AI Financial Assistant">💬</button>
+    <div id="chatDrawer" class="chat-drawer">
+        <div class="chat-drawer-header">
+            <div style="display: flex; align-items: center; gap: 0.5rem; font-weight: 700;">
+                <span>🤖</span>
+                <span>AI Expense Assistant</span>
+            </div>
+            <button id="chatDrawerClose" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.2rem;">&times;</button>
+        </div>
+        <div id="chatDrawerBody" class="chat-drawer-body">
+            <div class="chat-bubble bot">
+                👋 Hello {{ (session.get('user_name', 'there')).split(' ')[0] }}! You can type things like <em>"spent 250 on groceries"</em>, <em>"how much on food this month?"</em>, or <em>"budget status"</em>.
+            </div>
+        </div>
+        <div class="chat-drawer-footer">
+            <form id="drawerChatForm" style="display: flex; gap: 0.5rem;">
+                <input type="text" id="drawerChatInput" class="form-control" placeholder="Ask or log an expense..." autocomplete="off" style="padding: 0.5rem 0.75rem; font-size: 0.88rem;">
+                <button type="submit" class="btn btn-primary btn-sm">Send</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Quick Add Expense Modal -->
+    <div id="quickAddModal" class="modal-backdrop">
+        <div class="modal-box">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary);">⚡ Quick Log Expense</h3>
+                <button data-close-modal style="background: none; border: none; font-size: 1.5rem; color: var(--text-muted); cursor: pointer;">&times;</button>
+            </div>
+            <form action="{{ url_for('add') }}" method="POST">
+                <div class="form-group">
+                    <label class="form-label">Amount ({{ session.get('user_currency', '₹') }})</label>
+                    <input type="number" step="0.01" min="0.01" name="amount" class="form-control" placeholder="e.g. 450.00" required autofocus>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <input type="text" name="description" class="form-control" placeholder="e.g. Starbucks Latte, Uber to office, Amazon order" required>
+                    <small style="color: var(--text-muted); font-size: 0.8rem; margin-top: 4px; display: block;">💡 Auto-categorized using smart AI keywords</small>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Date</label>
+                        <input type="date" name="date" class="form-control" value="{{ today_date if today_date else '' }}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Category (Optional)</label>
+                        <select name="category" class="form-select">
+                            <option value="">⚡ Auto-Detect</option>
+                            <option value="Food">🍔 Food & Dining</option>
+                            <option value="Travel">🚕 Travel & Commute</option>
+                            <option value="Shopping">🛍️ Shopping</option>
+                            <option value="Bills">🧾 Utilities & Bills</option>
+                            <option value="Entertainment">🎬 Entertainment</option>
+                            <option value="Health">🩺 Health & Fitness</option>
+                            <option value="Education">📚 Education</option>
+                            <option value="Investments">📈 Investments</option>
+                            <option value="Other">📦 Other</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Payment Method</label>
+                    <select name="payment_method" class="form-select">
+                        <option value="UPI">📱 UPI / QR</option>
+                        <option value="Credit Card">💳 Credit Card</option>
+                        <option value="Debit Card">💳 Debit Card</option>
+                        <option value="Cash">💵 Cash</option>
+                        <option value="Net Banking">🏦 Net Banking</option>
+                    </select>
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
+                    <button type="button" class="btn btn-secondary" data-close-modal>Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Expense</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Global Toast Notifications Container -->
+    <div id="toastContainer" class="toast-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, msg in messages %}
+                <div class="toast toast-{{ category if category in ['success', 'danger', 'warning', 'info'] else 'info' }}">
+                    <div class="toast-content">
+                        <span>{{ '✅' if category == 'success' else ('❌' if category == 'danger' else ('⚠️' if category == 'warning' else 'ℹ️')) }}</span>
+                        <span>{{ msg }}</span>
+                    </div>
+                    <button class="toast-close" onclick="this.parentElement.remove()">&times;</button>
+                </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Global Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div>
+                <div style="display: flex; align-items: center; gap: 0.5rem; font-weight: 800; font-size: 1.1rem; color: var(--text-primary); margin-bottom: 0.25rem;">
+                    <span style="color: var(--primary);">⚡</span> ExpenseAI
+                </div>
+                <p style="color: var(--text-muted); font-size: 0.85rem;">Next-generation AI financial intelligence & expense analytics.</p>
+            </div>
+            <ul class="footer-links">
+                <li><a href="{{ url_for('about_page') }}">About</a></li>
+                <li><a href="{{ url_for('features_page') }}">Features</a></li>
+                <li><a href="{{ url_for('contact_page') }}">Contact</a></li>
+                <li><a href="{{ url_for('privacy_page') }}">Privacy</a></li>
+                <li><a href="{{ url_for('terms_page') }}">Terms</a></li>
+            </ul>
+        </div>
+    </footer>
+
+    <!-- Core App Scripts -->
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>
