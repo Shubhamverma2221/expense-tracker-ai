@@ -1,28 +1,33 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div style="max-width: 460px; margin: 3rem auto;">
+<div style="max-width: 480px; margin: 3rem auto;">
     <div class="card" style="padding: 2.25rem;">
         <div style="text-align: center; margin-bottom: 2rem;">
             <div class="brand-icon" style="margin: 0 auto 1rem; width: 48px; height: 48px; font-size: 1.5rem;">✨</div>
             <h2 style="font-size: 1.6rem; font-weight: 800; color: var(--text-primary); letter-spacing: -0.02em;">Create Your Account</h2>
-            <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem;">Start tracking and forecasting your finances today</p>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem;">Start fresh with your own personal financial decision assistant</p>
         </div>
 
         <form action="{{ url_for('signup') }}" method="POST">
             <div class="form-group">
                 <label class="form-label">Full Name</label>
-                <input type="text" name="name" class="form-control" placeholder="e.g. Priya Sharma" required autofocus>
+                <input type="text" name="name" class="form-control" placeholder="e.g. Rahul Verma" value="{{ name|default('') }}" required autofocus>
             </div>
 
             <div class="form-group">
                 <label class="form-label">Email Address</label>
-                <input type="email" name="email" class="form-control" placeholder="name@example.com" required>
+                <input type="email" name="email" class="form-control" placeholder="name@example.com" value="{{ email|default('') }}" required>
             </div>
 
             <div class="form-group">
                 <label class="form-label">Password</label>
                 <input type="password" name="password" class="form-control" placeholder="At least 6 characters" required minlength="6">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Confirm Password</label>
+                <input type="password" name="confirm_password" class="form-control" placeholder="Re-enter your password" required minlength="6">
             </div>
 
             <div class="form-row">
@@ -38,8 +43,8 @@
                 </div>
             </div>
 
-            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem; justify-content: center;">
-                Create Account
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 0.75rem; justify-content: center;">
+                Create Fresh Account 🚀
             </button>
         </form>
 
