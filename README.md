@@ -1,11 +1,18 @@
 # 🧠 ExpenseAI — Personal Financial Decision & Risk Intelligence Assistant
 
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Render%20Cloud-success?style=for-the-badge&logo=render&logoColor=white)](https://expense-tracker-ai-c9f0.onrender.com)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
 [![Framework](https://img.shields.io/badge/Framework-Flask%203.x-green.svg)](https://flask.palletsprojects.com/)
-[![Database](https://img.shields.io/badge/Database-SQLite-lightgrey.svg)](https://www.sqlite.org/)
-[![UI Design](https://img.shields.io/badge/UI-Modern%20Glassmorphism-purple.svg)]()
+[![AI Engine](https://img.shields.io/badge/AI%20Copilot-Google%20Gemini%202.5-orange.svg)](https://deepmind.google/technologies/gemini/)
+[![Database](https://img.shields.io/badge/Database-SQLite%20(10k%2B%20Txns)-lightgrey.svg)](https://www.sqlite.org/)
+[![UI Design](https://img.shields.io/badge/UI-Modern%20Glassmorphism%20%2B%20Light/Dark-purple.svg)]()
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg)](https://www.docker.com/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)]()
+
+> 🌐 **Live Public Deployment:** **[https://expense-tracker-ai-c9f0.onrender.com](https://expense-tracker-ai-c9f0.onrender.com)**  
+> ⚡ **Instant 1-Click Demo:** Click **[Try Demo Account](https://expense-tracker-ai-c9f0.onrender.com/guest-login)** to explore **10,800+ transactions** with full analytics pre-loaded!
+
+---
 
 > **"Most expense trackers tell users where their money went. ExpenseAI tells users where their money is going, why it is happening, what is likely to happen next, and what they can do before swiping."**
 
@@ -157,23 +164,27 @@ The app will be live at `http://localhost:5000`.
 
 ---
 
-## 🌐 1-Click Cloud Deployment (Render / Railway)
+## 🌐 Cloud Deployment (Live on Render)
 
-This repository includes a `render.yaml` and `Procfile`:
-1. Push this repository to GitHub.
-2. Link the repository on [Render](https://render.com) or [Railway](https://railway.app).
-3. Set build command: `pip install -r requirements.txt`
-4. Set start command: `gunicorn --config gunicorn_config.py app:app`
+The project is deployed and live at:
+👉 **[https://expense-tracker-ai-c9f0.onrender.com](https://expense-tracker-ai-c9f0.onrender.com)**
+
+### Deploy Your Own Instance:
+1. Fork / clone this repository.
+2. Link the repository on [Render](https://render.com) using the Blueprint feature (reads `render.yaml`).
+3. Render automatically sets build command (`pip install -r requirements.txt`) and start command (`gunicorn --config gunicorn_config.py app:app`).
 
 ---
 
 ## 🔑 Pre-Seeded Test Credentials
 
-| Account Role | Email | Password | Features |
+| Account Role | Email | Password | Dataset & Portfolio |
 | :--- | :--- | :--- | :--- |
-| **⚡ Instant Demo** | Click *"1-Click Demo Login"* | *(None required)* | 200+ historical expenses, active budgets, recurring bills. |
-| **👤 Demo User** | `guest@expensetracker.ai` | `guest123` | Pre-seeded financial health score & What-If data. |
-| **🛡️ Administrator** | `admin@expensetracker.ai` | `admin123` | Platform analytics, user directory, system audit logs. |
+| **⚡ 1-Click Instant Demo** | Click *[Try Demo Account](https://expense-tracker-ai-c9f0.onrender.com/guest-login)* | *(No login required)* | **7,137 transactions**, active budgets, recurring bills, health rating. |
+| **👤 Main Demo User** | `guest@expensetracker.ai` | `guest123` | Priya Sharma — ₹75k income, ₹300k goal, 24-month Kaggle history. |
+| **🎓 Student Mode** | `student@expensetracker.ai` | `student123` | Aarav Mehta — ₹14k allowance, semester burn-rate & micro-leak radar. |
+| **💼 Pro Investor** | `pro@expensetracker.ai` | `pro123` | Vikram Malhotra — ₹180k income, SIPs, EMIs, high investment tier. |
+| **🛡️ Administrator** | `admin@expensetracker.ai` | `admin123` | Multi-user platform analytics & system logs. |
 
 ---
 
