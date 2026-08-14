@@ -1,10 +1,11 @@
 /**
  * AI Expense Tracker - Frontend Application Controller
- * Handles Theme, Chart.js Visualizations, Toasts, Modals, Keyboard Shortcuts & Floating Chat
+ * Handles Password Toggles, Demo Credential Fill, Visualizations, Toasts, Modals, Keyboard Shortcuts & Floating Chat
  */
 
 document.addEventListener('DOMContentLoaded', () => {
-  initTheme();
+  initPasswordToggles();
+  initDemoCredentials();
   initDropdowns();
   initMobileNav();
   initModals();
@@ -13,40 +14,82 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /* ==========================================================================
-   1. Theme Management (Dark / Light Mode)
+   1. Universal Password Visibility Toggle (Eye Button)
    ========================================================================== */
-function initTheme() {
-  const savedTheme = localStorage.getItem('theme') || 'dark';
-  document.documentElement.setAttribute('data-theme', savedTheme);
-  updateThemeIcon(savedTheme);
+function initPasswordToggles() {
+  const eyeSvg = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+      <circle cx="12" cy="12" r="3"></circle>
+    </svg>
+  `;
 
-  const themeToggleBtn = document.getElementById('themeToggleBtn');
-  if (themeToggleBtn) {
-    themeToggleBtn.addEventListener('click', () => {
-      const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
-      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-      document.documentElement.setAttribute('data-theme', newTheme);
-      localStorage.setItem('theme', newTheme);
-      updateThemeIcon(newTheme);
+  const eyeOffSvg = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+      <line x1="1" y1="1" x2="23" y2="23"></line>
+    </svg>
+  `;
 
-      // Re-render Chart.js charts if they exist to match theme palette
-      if (window.renderDashboardCharts) {
-        window.renderDashboardCharts();
+  document.addEventListener('click', (e) => {
+    const toggleBtn = e.target.closest('.password-toggle-btn');
+    if (!toggleBtn) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    // Find input in the same group or via target attribute
+    let targetInput = null;
+    if (toggleBtn.dataset.target) {
+      targetInput = document.querySelector(toggleBtn.dataset.target);
+    } else {
+      const group = toggleBtn.closest('.password-input-group') || toggleBtn.closest('.form-group');
+      if (group) {
+        targetInput = group.querySelector('input[type="password"], input[type="text"]');
       }
-    });
-  }
-}
+    }
 
-function updateThemeIcon(theme) {
-  const themeToggleBtn = document.getElementById('themeToggleBtn');
-  if (themeToggleBtn) {
-    themeToggleBtn.innerHTML = theme === 'dark' ? '☀️' : '🌙';
-    themeToggleBtn.setAttribute('title', `Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`);
-  }
+    if (!targetInput) return;
+
+    const isPassword = targetInput.getAttribute('type') === 'password';
+    targetInput.setAttribute('type', isPassword ? 'text' : 'password');
+    toggleBtn.innerHTML = isPassword ? eyeOffSvg : eyeSvg;
+    toggleBtn.setAttribute('title', isPassword ? 'Hide password' : 'Show password');
+    toggleBtn.setAttribute('aria-label', isPassword ? 'Hide password' : 'Show password');
+    toggleBtn.setAttribute('aria-pressed', isPassword ? 'true' : 'false');
+  });
 }
 
 /* ==========================================================================
-   2. Dropdowns & Navigation
+   2. Demo Credentials Quick-Fill Helper
+   ========================================================================== */
+function initDemoCredentials() {
+  document.addEventListener('click', (e) => {
+    const pill = e.target.closest('[data-fill-email]');
+    if (!pill) return;
+
+    e.preventDefault();
+    const email = pill.getAttribute('data-fill-email');
+    const password = pill.getAttribute('data-fill-password');
+
+    const emailInput = document.querySelector('input[name="email"]');
+    const passwordInput = document.querySelector('input[name="password"]');
+
+    if (emailInput && email) {
+      emailInput.value = email;
+    }
+    if (passwordInput && password) {
+      passwordInput.value = password;
+    }
+
+    if (window.showToast) {
+      window.showToast(`Loaded ${email} credentials! Click Log In.`, 'info', 2500);
+    }
+  });
+}
+
+/* ==========================================================================
+   3. Dropdowns & Navigation
    ========================================================================== */
 function initDropdowns() {
   const userMenuBtn = document.getElementById('userMenuBtn');
@@ -77,17 +120,18 @@ function initMobileNav() {
         navLinks.style.top = '100%';
         navLinks.style.left = '0';
         navLinks.style.right = '0';
-        navLinks.style.background = 'var(--bg-surface)';
+        navLinks.style.background = '#ffffff';
         navLinks.style.flexDirection = 'column';
         navLinks.style.padding = '1rem';
         navLinks.style.borderBottom = '1px solid var(--border-color)';
+        navLinks.style.boxShadow = 'var(--shadow-md)';
       }
     });
   }
 }
 
 /* ==========================================================================
-   3. Toast Notification System
+   4. Toast Notification System
    ========================================================================== */
 window.showToast = function(message, type = 'info', duration = 4000) {
   let container = document.getElementById('toastContainer');
@@ -127,10 +171,9 @@ window.showToast = function(message, type = 'info', duration = 4000) {
 };
 
 /* ==========================================================================
-   4. Modals & Dialogs
+   5. Modals & Dialogs
    ========================================================================== */
 function initModals() {
-  // Quick Add Expense Modal triggers
   const quickAddBtns = document.querySelectorAll('[data-open-modal="quickAddModal"]');
   const quickAddModal = document.getElementById('quickAddModal');
   const closeModalBtns = document.querySelectorAll('[data-close-modal]');
@@ -149,7 +192,6 @@ function initModals() {
     });
   });
 
-  // Close modal on backdrop click
   document.querySelectorAll('.modal-backdrop').forEach(modal => {
     modal.addEventListener('click', (e) => {
       if (e.target === modal) {
@@ -160,7 +202,7 @@ function initModals() {
 }
 
 /* ==========================================================================
-   5. Floating AI Chat Widget
+   6. Floating AI Chat Widget
    ========================================================================== */
 function initFloatingChat() {
   const chatToggleBtn = document.getElementById('floatingChatBtn');
@@ -190,11 +232,9 @@ function initFloatingChat() {
         const text = chatInput.value.trim();
         if (!text) return;
 
-        // Append User Bubble
         appendChatBubble(chatBody, text, 'user');
         chatInput.value = '';
 
-        // Append Loading Bubble
         const loadingId = 'loading-' + Date.now();
         appendChatBubble(chatBody, 'Thinking...', 'bot', loadingId);
 
@@ -225,11 +265,10 @@ function appendChatBubble(container, content, sender, customId = null) {
   bubble.className = `chat-bubble ${sender}`;
   if (customId) bubble.id = customId;
 
-  // Simple Markdown parsing for chat bubbles (bold, list bullets)
   let formatted = content
     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
     .replace(/\*(.*?)\*/g, '<em>$1</em>')
-    .replace(/`(.*?)`/g, '<code style="background:rgba(255,255,255,0.1);padding:2px 4px;border-radius:4px;">$1</code>')
+    .replace(/`(.*?)`/g, '<code style="background:#e2e8f0;padding:2px 4px;border-radius:4px;color:#0f172a;">$1</code>')
     .replace(/\n/g, '<br>');
 
   bubble.innerHTML = formatted;
@@ -238,11 +277,10 @@ function appendChatBubble(container, content, sender, customId = null) {
 }
 
 /* ==========================================================================
-   6. Keyboard Shortcuts
+   7. Keyboard Shortcuts
    ========================================================================== */
 function initKeyboardShortcuts() {
   document.addEventListener('keydown', (e) => {
-    // Press 'N' or 'n' to open Add Expense modal when not focused on an input
     if ((e.key === 'n' || e.key === 'N') && !['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) {
       const quickAddModal = document.getElementById('quickAddModal');
       if (quickAddModal) {
@@ -253,7 +291,6 @@ function initKeyboardShortcuts() {
       }
     }
 
-    // Escape to close open modals
     if (e.key === 'Escape') {
       document.querySelectorAll('.modal-backdrop.show').forEach(m => m.classList.remove('show'));
       const drawer = document.getElementById('chatDrawer');

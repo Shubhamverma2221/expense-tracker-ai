@@ -35,7 +35,7 @@ class ExpenseDB:
                     savings_goal REAL DEFAULT 100000.0,
                     is_student_mode INTEGER DEFAULT 0,
                     monthly_allowance REAL DEFAULT 15000.0,
-                    theme TEXT DEFAULT 'dark',
+                    theme TEXT DEFAULT 'light',
                     created_at TEXT NOT NULL
                 );
                 """
@@ -186,12 +186,12 @@ class ExpenseDB:
             now_iso = datetime.now().isoformat()
 
             # Seed Admin User
-            admin_user = conn.execute("SELECT id FROM users WHERE email = ?", ("admin@expensetracker.ai",)).fetchone()
+            admin_user = conn.execute("SELECT id, password_hash FROM users WHERE LOWER(email) = ?", ("admin@expensetracker.ai",)).fetchone()
             if not admin_user:
                 conn.execute(
                     """
                     INSERT INTO users (name, email, password_hash, role, currency, monthly_budget, income, savings_goal, is_student_mode, monthly_allowance, theme, created_at)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, 15000.0, ?, ?)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, 15000.0, 'light', ?)
                     """,
                     (
                         "Admin User",
@@ -202,18 +202,19 @@ class ExpenseDB:
                         50000.0,
                         95000.0,
                         250000.0,
-                        "dark",
                         now_iso,
                     ),
                 )
+            elif not check_password_hash(admin_user["password_hash"], "admin123"):
+                conn.execute("UPDATE users SET password_hash = ?, theme = 'light' WHERE id = ?", (generate_password_hash("admin123"), admin_user["id"]))
 
             # Seed Demo / Guest User
-            demo_user = conn.execute("SELECT id FROM users WHERE email = ?", ("guest@expensetracker.ai",)).fetchone()
+            demo_user = conn.execute("SELECT id, password_hash FROM users WHERE LOWER(email) = ?", ("guest@expensetracker.ai",)).fetchone()
             if not demo_user:
                 cursor = conn.execute(
                     """
                     INSERT INTO users (name, email, password_hash, role, currency, monthly_budget, income, savings_goal, is_student_mode, monthly_allowance, theme, created_at)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, 15000.0, ?, ?)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, 15000.0, 'light', ?)
                     """,
                     (
                         "Priya Sharma (Demo)",
@@ -224,13 +225,14 @@ class ExpenseDB:
                         30000.0,
                         65000.0,
                         150000.0,
-                        "dark",
                         now_iso,
                     ),
                 )
                 guest_id = cursor.lastrowid
             else:
                 guest_id = demo_user["id"]
+                if not check_password_hash(demo_user["password_hash"], "guest123"):
+                    conn.execute("UPDATE users SET password_hash = ?, theme = 'light' WHERE id = ?", (generate_password_hash("guest123"), guest_id))
 
             # Ensure all orphaned expenses map to guest_id
             conn.execute("UPDATE expenses SET user_id = ? WHERE user_id IS NULL OR user_id = 0", (guest_id,))
@@ -321,7 +323,7 @@ class ExpenseDB:
                 cursor = conn.execute(
                     """
                     INSERT INTO users (name, email, password_hash, role, currency, monthly_budget, income, savings_goal, is_student_mode, monthly_allowance, theme, created_at)
-                    VALUES (?, ?, ?, ?, ?, 25000.0, 50000.0, 100000.0, 0, 15000.0, 'dark', ?)
+                    VALUES (?, ?, ?, ?, ?, 25000.0, 50000.0, 100000.0, 0, 15000.0, 'light', ?)
                     """,
                     (name.strip(), email_clean, pwd_hash, role, currency, now_iso),
                 )
@@ -331,6 +333,8 @@ class ExpenseDB:
                 return None
 
     def get_user_by_email(self, email: str) -> Optional[Dict]:
+        if not email:
+            return None
         with self._get_connection() as conn:
             row = conn.execute("SELECT * FROM users WHERE LOWER(email) = LOWER(?)", (email.strip(),)).fetchone()
             return dict(row) if row else None
@@ -341,7 +345,9 @@ class ExpenseDB:
             return dict(row) if row else None
 
     def authenticate_user(self, email: str, password: str) -> Optional[Dict]:
-        user = self.get_user_by_email(email)
+        if not email or not password:
+            return None
+        user = self.get_user_by_email(email.strip().lower())
         if user and check_password_hash(user["password_hash"], password):
             return user
         return None

@@ -319,9 +319,8 @@
 {% block scripts %}
 <script>
 window.renderDashboardCharts = function() {
-    const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
-    const textColor = isDark ? '#94a3b8' : '#475569';
-    const gridColor = isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)';
+    const textColor = '#475569';
+    const gridColor = '#e2e8f0';
 
     // Trend Chart Data
     const trendCtx = document.getElementById('trendChart');

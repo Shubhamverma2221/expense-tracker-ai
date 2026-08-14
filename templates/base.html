@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -52,9 +52,6 @@
 
             <!-- Right Actions -->
             <div class="nav-actions">
-                <!-- Theme Switcher -->
-                <button id="themeToggleBtn" class="btn-icon" title="Toggle Theme">☀️</button>
-
                 {% if session.get('user_id') %}
                 <!-- Quick Add Expense Trigger Button -->
                 <button class="btn btn-primary btn-sm" data-open-modal="quickAddModal">

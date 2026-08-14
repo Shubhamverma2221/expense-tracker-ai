@@ -91,13 +91,7 @@
                 </div>
             </div>
 
-            <div class="form-group">
-                <label class="form-label">UI Color Theme</label>
-                <select name="theme" class="form-select">
-                    <option value="dark" {% if user and user.theme == 'dark' %}selected{% endif %}>🌙 Sleek Dark Theme</option>
-                    <option value="light" {% if user and user.theme == 'light' %}selected{% endif %}>☀️ Clean Light Theme</option>
-                </select>
-            </div>
+            <input type="hidden" name="theme" value="light">
 
             <button type="submit" class="btn btn-primary btn-lg" style="margin-top: 1rem;">
                 💾 Save Profile Changes

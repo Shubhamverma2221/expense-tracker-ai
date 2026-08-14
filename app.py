@@ -45,7 +45,7 @@ def login_required(view):
     def wrapped_view(**kwargs):
         if "user_id" not in session:
             flash("Please log in or try the instant demo to access this feature.", "warning")
-            return redirect(url_for("login"))
+            return redirect(url_for("login", next=request.path))
         return view(**kwargs)
     return wrapped_view
 
@@ -94,8 +94,15 @@ def login():
         return redirect(url_for("dashboard"))
 
     if request.method == "POST":
-        email = request.form.get("email", "").strip()
+        email = request.form.get("email", "").strip().lower()
         password = request.form.get("password", "")
+        remember = request.form.get("remember")
+        next_url = request.form.get("next") or request.args.get("next")
+
+        if not email or not password:
+            flash("Please enter both your email address and password.", "warning")
+            return render_template("auth/login.html", email=email)
+
         user = db.authenticate_user(email, password)
         if user:
             session["user_id"] = user["id"]
@@ -103,11 +110,20 @@ def login():
             session["user_email"] = user["email"]
             session["user_role"] = user["role"]
             session["user_currency"] = user.get("currency", "₹")
+
+            if remember:
+                session.permanent = True
+                app.permanent_session_lifetime = timedelta(days=30)
+
             db.log_audit("User Login", user_id=user["id"], user_email=user["email"], ip_address=request.remote_addr or "127.0.0.1")
             flash(f"Welcome back, {user['name'].split(' ')[0]}!", "success")
+
+            # Safe redirect: internal paths only
+            if next_url and next_url.startswith("/") and not next_url.startswith("//"):
+                return redirect(next_url)
             return redirect(url_for("dashboard"))
         else:
-            flash("Invalid email or password. Please try again.", "danger")
+            flash("Invalid email address or password. Please verify your credentials.", "danger")
             return render_template("auth/login.html", email=email)
 
     return render_template("auth/login.html", title="Sign In - AI Expense Tracker")
@@ -564,7 +580,7 @@ def profile_page():
         savings_goal = float(request.form.get("savings_goal", "100000") or 100000)
         is_student_mode = 1 if request.form.get("is_student_mode") == "1" else 0
         monthly_allowance = float(request.form.get("monthly_allowance", "15000") or 15000)
-        theme = request.form.get("theme", "dark")
+        theme = request.form.get("theme", "light")
 
         db.update_user_profile(
             user_id=uid,
