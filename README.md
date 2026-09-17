@@ -1,11 +1,12 @@
 # 🧠 ExpenseAI — Personal Financial Decision & Risk Intelligence Assistant
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Render%20Cloud-success?style=for-the-badge&logo=render&logoColor=white)](https://expense-tracker-ai-c9f0.onrender.com)
-[![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
-[![Framework](https://img.shields.io/badge/Framework-Flask%203.x-green.svg)](https://flask.palletsprojects.com/)
-[![AI Engine](https://img.shields.io/badge/AI%20Copilot-Google%20Gemini%202.5-orange.svg)](https://deepmind.google/technologies/gemini/)
+[![Java](https://img.shields.io/badge/Java-21%2B-ED8B00?style=flat&logo=openjdk&logoColor=white)](https://www.oracle.com/java/)
+[![Framework](https://img.shields.io/badge/Spring%20Boot-3.3.6-6DB33F?style=flat&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
+[![Build](https://img.shields.io/badge/Maven-3.9-C71A36?style=flat&logo=apachemaven&logoColor=white)](https://maven.apache.org/)
+[![AI Engine](https://img.shields.io/badge/AI%20Copilot-Google%20Gemini-orange.svg)](https://deepmind.google/technologies/gemini/)
 [![Database](https://img.shields.io/badge/Database-SQLite%20(10k%2B%20Txns)-lightgrey.svg)](https://www.sqlite.org/)
-[![UI Design](https://img.shields.io/badge/UI-Modern%20Glassmorphism%20%2B%20Light/Dark-purple.svg)]()
+[![UI Design](https://img.shields.io/badge/UI-Modern%20Glassmorphism-purple.svg)]()
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg)](https://www.docker.com/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)]()
 
@@ -111,19 +112,21 @@ $$\text{Goodness-of-Fit Confidence } (R^2) = 1 - \frac{\sum (y_i - \hat{y}_i)^2}
 ```
 ┌────────────────────────────────────────────────────────────────────────┐
 │                          Client Layer (Browser)                        │
-│   • Modern Glassmorphism CSS (Dark/Light Mode)                         │
-│   • Chart.js Interactive Visualizations & 5-State Feedback (Empty/Load)│
+│   • Modern Glassmorphism CSS & Rich Visual Aesthetics                  │
+│   • Chart.js Interactive Visualizations & Micro-Animations             │
 └───────────────────────────────────┬────────────────────────────────────┘
                                     │ HTTP / REST API / JSON
 ┌───────────────────────────────────▼────────────────────────────────────┐
-│                       Application Layer (Flask 3.x)                    │
+│                 Application Layer (Spring Boot 3.3 / Java 21)          │
+│   • Embedded Apache Tomcat Container on Port 5000                      │
+│   • Spring Web MVC Controllers + Pebble Template Engine (HTML5)        │
 │   • Session Authentication & Role-Based Access Control (Admin/User)    │
 │   • REST Controllers (/api/affordability, /api/what-if, /api/chat)     │
 └───────────────────┬────────────────────────────────┬───────────────────┘
                     │                                │
 ┌───────────────────▼─────────────────┐   ┌──────────▼───────────────────┐
 │     Decision Intelligence Engines   │   │        Data Persistence      │
-│   • FinancialIntelligenceEngine     │   │   • SQLite3 (WAL Mode)       │
+│   • FinancialIntelligenceService    │   │   • SQLite3 (JDBC)           │
 │   • Least-Squares Linear Predictor  │   │   • Multi-User Isolated      │
 │   • NLP Categorizer & Rule Matcher  │   │   • Audit Logging & Backups  │
 └─────────────────────────────────────┘   └──────────────────────────────┘
@@ -133,30 +136,48 @@ $$\text{Goodness-of-Fit Confidence } (R^2) = 1 - \frac{\sum (y_i - \hat{y}_i)^2}
 
 ## ⚡ Quick Start & Local Setup
 
-### 1. Clone & Setup Environment
+### Prerequisites
+- **Java Development Kit (JDK 17+)** *(JDK 21 or 25 recommended)*
+- **Apache Maven 3.8+** *(Optional if using the pre-compiled JAR)*
+
+### 1. Clone the Repository
 ```bash
-git clone https://github.com/your-username/expense-tracker-ai.git
+git clone https://github.com/Shubhamverma2221/expense-tracker-ai.git
 cd expense-tracker-ai
-
-# Create virtual environment
-python -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-
-# Install dependencies
-pip install -r requirements.txt
 ```
 
 ### 2. Run the Application
-```bash
-python app.py
+
+#### Option A: 1-Click Launch (Windows)
+Double-click or execute:
+```cmd
+run.bat
 ```
-Open [http://127.0.0.1:5000](http://127.0.0.1:5000) in your browser.
+*(Auto-detects Java, uses the pre-packaged JAR, and boots in ~3 seconds on port 5000)*
+
+#### Option B: Run via Java directly
+```bash
+java -jar target/expense-tracker-ai-1.0.0.jar
+```
+
+#### Option C: Run via Maven
+```bash
+mvn spring-boot:run
+```
+
+Open **[http://127.0.0.1:5000](http://127.0.0.1:5000)** in your browser.
 
 ---
 
 ## 🐳 Docker Deployment
 
-Run with Docker Compose:
+Run with Docker:
+```bash
+docker build -t expense-tracker-ai .
+docker run -p 5000:5000 expense-tracker-ai
+```
+
+Or run with Docker Compose:
 ```bash
 docker-compose up --build -d
 ```
@@ -166,13 +187,13 @@ The app will be live at `http://localhost:5000`.
 
 ## 🌐 Cloud Deployment (Live on Render)
 
-The project is deployed and live at:
+The project is configured for 1-click Docker deployment on Render:
 👉 **[https://expense-tracker-ai-c9f0.onrender.com](https://expense-tracker-ai-c9f0.onrender.com)**
 
 ### Deploy Your Own Instance:
-1. Fork / clone this repository.
-2. Link the repository on [Render](https://render.com) using the Blueprint feature (reads `render.yaml`).
-3. Render automatically sets build command (`pip install -r requirements.txt`) and start command (`gunicorn --config gunicorn_config.py app:app`).
+1. Fork or push this repository to GitHub.
+2. Link the repository on [Render](https://render.com) using the Blueprint feature (`render.yaml`).
+3. Render automatically builds the multi-stage `Dockerfile` (Maven + Eclipse Temurin JRE) and binds dynamically to `$PORT`.
 
 ---
 
