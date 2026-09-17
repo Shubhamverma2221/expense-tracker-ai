@@ -1,0 +1,24 @@
+name: Render 24/7 Keep-Alive Trigger
+
+on:
+  schedule:
+    # Trigger every 14 minutes (Render free-tier idle timeout is 15 minutes)
+    - cron: '*/14 * * * *'
+  workflow_dispatch: # Allows manual trigger from GitHub Actions UI
+
+jobs:
+  keep-alive:
+    name: Ping Render Web Service
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Ping Live Website & API Health Endpoint
+        run: |
+          echo "Triggering Render keep-alive ping..."
+          STATUS=$(curl -sS -m 30 -o /dev/null -w "%{http_code}" https://expense-tracker-ai-c9f0.onrender.com/ping || echo "000")
+          echo "Ping Response Code: $STATUS"
+          if [ "$STATUS" -ge 200 ] && [ "$STATUS" -lt 400 ]; then
+            echo "✅ Website is active and warm!"
+          else
+            echo "⚠️ Server woke up or responded with status $STATUS"
+          fi

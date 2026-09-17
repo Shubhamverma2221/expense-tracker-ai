@@ -63,4 +63,14 @@ public class PublicPagesController {
         model.addAttribute("title", "Terms & Conditions");
         return "terms";
     }
+
+    @GetMapping(value = {"/ping", "/health"}, produces = "application/json")
+    @org.springframework.web.bind.annotation.ResponseBody
+    public java.util.Map<String, Object> ping() {
+        return java.util.Map.of(
+                "status", "UP",
+                "service", "ExpenseAI",
+                "timestamp", System.currentTimeMillis()
+        );
+    }
 }
