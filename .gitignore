@@ -19,3 +19,21 @@ ENV/
 # OS generated files
 .DS_Store
 Thumbs.db
+
+# Java & Maven build artifacts
+target/
+*.class
+*.jar
+*.war
+*.ear
+
+# IDE & Editor files
+.vscode/
+.idea/
+*.iml
+*.ipr
+*.iws
+.project
+.classpath
+.settings/
+

@@ -3,64 +3,53 @@ setlocal ENABLEDELAYEDEXPANSION
 
 cd /d "%~dp0"
 
-echo === Checking Python installation ===
-set PY_CMD=
-where py >nul 2>nul && set PY_CMD=py -3
-if "%PY_CMD%"=="" (
-  where python >nul 2>nul && set PY_CMD=python
-)
-if "%PY_CMD%"=="" (
-  echo Python is not on PATH. Please install Python 3.11+ and check "Add to PATH".
-  echo Download: https://www.python.org/downloads/
-  pause
-  exit /b 1
-)
-for /f "tokens=*" %%v in ('%PY_CMD% --version 2^>^&1') do set PY_VER=%%v
-echo Using: %PY_VER%
+echo ===================================================
+echo     ExpenseAI - Spring Boot Intelligent Engine
+echo ===================================================
 
-echo === Creating virtual environment (if missing) ===
-if not exist .venv (
-  %PY_CMD% -m venv .venv
-  if errorlevel 1 (
-    echo Failed to create virtual environment.
+if "%JAVA_HOME%"=="" (
+    if exist "C:\Program Files\Java\jdk-25.0.2" (
+        set "JAVA_HOME=C:\Program Files\Java\jdk-25.0.2"
+    ) else (
+        where java >nul 2>nul
+        if errorlevel 1 (
+            echo [ERROR] Java is not installed or not found on PATH.
+            echo Please install Java 17+ or JDK 21/25.
+            pause
+            exit /b 1
+        )
+    )
+)
+
+echo [INFO] JAVA_HOME is: %JAVA_HOME%
+set "PATH=%JAVA_HOME%\bin;%PATH%"
+
+set MVN_CMD=mvn
+where mvn >nul 2>nul
+if errorlevel 1 (
+    if exist "C:\Users\priya\apache-maven-3.9.9\bin\mvn.cmd" (
+        set "MVN_CMD=C:\Users\priya\apache-maven-3.9.9\bin\mvn.cmd"
+    ) else (
+        echo [ERROR] Maven is not found.
+        pause
+        exit /b 1
+    )
+)
+
+if exist "target\expense-tracker-ai-1.0.0.jar" (
+    echo [INFO] Launching pre-built JAR on http://127.0.0.1:5000 ...
+    java -jar target\expense-tracker-ai-1.0.0.jar
+) else (
+    echo [INFO] Starting Spring Boot server via Maven on http://127.0.0.1:5000 ...
+    call "%MVN_CMD%" spring-boot:run
+)
+
+if errorlevel 1 (
+    echo.
+    echo [ERROR] Application failed to start or exited with an error.
     pause
     exit /b 1
-  )
-)
-
-echo === Activating virtual environment ===
-call .venv\Scripts\activate.bat
-if errorlevel 1 (
-  echo Failed to activate virtual environment.
-  pause
-  exit /b 1
-)
-
-echo === Installing dependencies ===
-if exist requirements.txt (
-  python -m pip install --upgrade pip
-  if errorlevel 1 echo (pip upgrade failed, continuing...)
-  python -m pip install -r requirements.txt
-) else (
-  echo requirements.txt not found. Installing Flask only...
-  python -m pip install Flask
-)
-if errorlevel 1 (
-  echo Failed to install dependencies.
-  pause
-  exit /b 1
-)
-
-echo === Starting web server ===
-python app.py
-if errorlevel 1 (
-  echo.
-  echo The app exited with an error. Review the messages above.
-  pause
-  exit /b 1
 )
 
 endlocal
 exit /b 0
-
-
