@@ -1,13 +1,12 @@
 from django.urls import path, include
-from rest_framework.routers import DefaultRouter
-from .views import ExpenseViewSet, FinancialGoalViewSet
-from django.views.generic import TemplateView
+from rest_framework import routers
+from .views import ExpenseViewSet, FinancialGoalViewSet, RecurringViewSet
 
-router = DefaultRouter()
-router.register(r'expenses', ExpenseViewSet, basename='expense')
-router.register(r'goals', FinancialGoalViewSet, basename='goal')
+router = routers.DefaultRouter()
+router.register(r'expenses', ExpenseViewSet)
+router.register(r'goals', FinancialGoalViewSet)
+router.register(r'recurring', RecurringViewSet)
 
 urlpatterns = [
-    path('api/', include(router.urls)),
-    path('', TemplateView.as_view(template_name='index.html'), name='home'),
+    path('', include(router.urls)),
 ]

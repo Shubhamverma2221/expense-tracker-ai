@@ -1,213 +1,81 @@
-# 🧠 ExpenseAI — Personal Financial Decision & Risk Intelligence Assistant
+# Expense Tracker AI (Django + DRF)
 
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-Render%20Cloud-success?style=for-the-badge&logo=render&logoColor=white)](https://expense-tracker-ai-c9f0.onrender.com)
-[![Java](https://img.shields.io/badge/Java-21%2B-ED8B00?style=flat&logo=openjdk&logoColor=white)](https://www.oracle.com/java/)
-[![Framework](https://img.shields.io/badge/Spring%20Boot-3.3.6-6DB33F?style=flat&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
-[![Build](https://img.shields.io/badge/Maven-3.9-C71A36?style=flat&logo=apachemaven&logoColor=white)](https://maven.apache.org/)
-[![AI Engine](https://img.shields.io/badge/AI%20Copilot-Google%20Gemini-orange.svg)](https://deepmind.google/technologies/gemini/)
-[![Database](https://img.shields.io/badge/Database-SQLite%20(10k%2B%20Txns)-lightgrey.svg)](https://www.sqlite.org/)
-[![UI Design](https://img.shields.io/badge/UI-Modern%20Glassmorphism-purple.svg)]()
-[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg)](https://www.docker.com/)
-[![License](https://img.shields.io/badge/License-MIT-yellow.svg)]()
+## Overview
+This repository now hosts a **Python/Django** implementation of the Expense Tracker AI application, replacing the original Java Spring Boot code. The project provides:
 
-> 🌐 **Live Public Deployment:** **[https://expense-tracker-ai-c9f0.onrender.com](https://expense-tracker-ai-c9f0.onrender.com)**  
-> ⚡ **Instant 1-Click Demo:** Click **[Try Demo Account](https://expense-tracker-ai-c9f0.onrender.com/guest-login)** to explore **10,800+ transactions** with full analytics pre-loaded!
+- **RESTful API** powered by Django REST Framework (DRF) for managing expenses, financial goals, and recurring transactions.
+- **HTML/CSS frontend** using vanilla CSS and Google Fonts for a clean, modern UI.
+- **User authentication** via Django’s built‑in auth system.
+- **Administrative interface** (`/admin/`) for managing data.
 
----
-
-> **"Most expense trackers tell users where their money went. ExpenseAI tells users where their money is going, why it is happening, what is likely to happen next, and what they can do before swiping."**
-
----
-
-## 🎯 The Problem & Underserved Niche
-
-Traditional personal finance apps (Mint, Splitwise, Excel sheets) suffer from the **"Post-Mortem Trap"**: they record transactions *after* the money is gone and show retrospective pie charts.
-
-### The Real-World Friction:
-* **The Student & Young Professional Runway Crisis**: A user receives ₹12,000 allowance or ₹30,000 salary on the 1st, but runs out of money by the 18th due to unmonitored ₹80–₹250 delivery fees and unaligned bill due dates.
-* **Pre-Purchase Uncertainty**: Users frequently ask *"Can I afford this ₹3,500 jacket today without compromising my rent on the 15th?"* — with zero tools providing instant, real-time friction before swiping.
-* **Cash-Flow Timing Collisions**: Users may be solvent over a 30-day period, but suffer temporary cash deficits when fixed obligations (Rent, EMIs, Broadband) clash with daily burn rates.
-
-**ExpenseAI** solves this by shifting personal finance from **passive accounting** to **active, real-time decision support**.
-
----
-
-## 🚀 Key Features & Decision Engines
-
-```
-                       ┌────────────────────────────────────────────────┐
-                       │          Financial Intelligence Loop           │
-                       └────────────────────────────────────────────────┘
-                                                │
-       ┌──────────────────────┬─────────────────┴─────────────────┬──────────────────────┐
-       ▼                      ▼                                   ▼                      ▼
-🔴 Purchase Impact    🧠 Health Score                     ⏰ Cash-Flow Collision 🕵️ Money Leak Detector
-"Can I Afford This?"  (0–100 Multi-Factor)                (20-Day Forward)       (< ₹300 Micro-Spends)
-• Discretionary Pool  • Savings Accumulation (25 pts)     • Scheduled Bills      • Cumulative Leak Drain
-• Safe Daily Shift    • Budget Adherence (25 pts)         • Daily Burn Rate      • Annual Drain Forecast
-• 3-Tier Verdict      • Spending Volatility (20 pts)      • Shortfall Warnings   • Optimization Advice
-                      • Essential/Discretionary (15 pts)
-                      • Recurring Bill Burden (15 pts)
-```
-
-### 1. 🔴 Real-Time "Can I Afford This?" Decision Engine
-- Evaluates planned purchases before execution.
-- Checks liquid discretionary pool, billing cycle countdown, category budget utilization, and upcoming scheduled bills.
-- Returns a 3-tier verdict (**Affordable ✅**, **Caution ⚠️**, **High Risk 🚨**) with exact before/after safe daily spending shifts.
-
-### 2. 🧠 Multi-Factor AI Financial Health Score (0–100)
-- Mathematical composite rating based on 5 weighted pillars:
-  1. **Savings Rate (25 pts)**: Ratio of monthly savings against total income.
-  2. **Budget Adherence (25 pts)**: Category-level spending discipline.
-  3. **Spending Volatility (20 pts)**: Day-to-day spending variance and spike minimization.
-  4. **Essential vs Discretionary Ratio (15 pts)**: 50/30 needs vs wants adherence.
-  5. **Fixed Obligation Burden (15 pts)**: Recurring bills as a percentage of income.
-- Delivers actionable diagnostics and historical grade tracking (Grade A/B/C/D).
-
-### 3. ⏰ Cash-Flow Collision & Bill Timing Predictor
-- Forward-looking 20-day projection modeling daily burn rate against scheduled recurring commitments (Rent, EMIs, Utilities).
-- Flags imminent shortfall dates with exact deficit amounts before due dates arrive.
-
-### 4. 🕵️ Micro-Expense Money Leak Auditor (< ₹300)
-- Isolates high-frequency small expenses (coffee, delivery fees, convenience charges).
-- Calculates cumulative drain, percentage of monthly outflow, and projected annual wealth loss if uncurbed.
-
-### 5. 💰 Safe-to-Spend Daily Run-Rate Allowance
-- Dynamic calculation adjusting every morning:
-  $$\text{Safe Daily Spend} = \frac{\text{Monthly Budget} - \text{Total Spent to Date} - \text{Upcoming Committed Bills}}{\text{Days Remaining in Month}}$$
-
-### 6. 🧪 Financial "What-If" Simulation Lab
-- Multi-month trajectory modeling:
-  - **Major Purchase**: Simulates 6-month savings delay from buying a ₹60,000 laptop.
-  - **Habit Optimization**: Projects 1-year and 3-year compound gains from saving ₹100/day (+₹36,500/yr).
-  - **Fixed Cost Shift**: Computes runway impact of a ₹2,000 rent increase.
-
-### 7. 🧾 Smart Receipt Scanner & NLP Auto-Parser
-- Regex & NLP extraction for receipt snippets and SMS alerts.
-- Auto-extracts Merchant Name, Transaction Date, Total Amount, and Category with 1-click database persistence.
-
-### 8. 💬 Conversational Decision Copilot
-- Supports natural language commands:
-  - *"Can I afford shoes for ₹3,500?"*
-  - *"What is my health score?"*
-  - *"Where am I leaking money?"*
-  - *"Spent 350 on fuel today"*
-
----
-
-## 📐 Mathematical Formulations
-
-### 1. Financial Health Score
-$$\text{Health Score} = S_{\text{savings}} + S_{\text{adherence}} + S_{\text{volatility}} + S_{\text{ratio}} + S_{\text{recurring}}$$
-$$\text{Where } S_{\text{savings}} = \min\left(25, \frac{\text{Savings Rate}}{0.25} \times 25\right)$$
-
-### 2. Least-Squares Linear Trend Prediction
-$$\text{Slope } (m) = \frac{n \sum (xy) - \sum x \sum y}{n \sum (x^2) - (\sum x)^2}, \quad \text{Intercept } (c) = \frac{\sum y - m \sum x}{n}$$
-$$\text{Goodness-of-Fit Confidence } (R^2) = 1 - \frac{\sum (y_i - \hat{y}_i)^2}{\sum (y_i - \bar{y})^2}$$
-
----
-
-## 🏛️ System Architecture
-
-```
-┌────────────────────────────────────────────────────────────────────────┐
-│                          Client Layer (Browser)                        │
-│   • Modern Glassmorphism CSS & Rich Visual Aesthetics                  │
-│   • Chart.js Interactive Visualizations & Micro-Animations             │
-└───────────────────────────────────┬────────────────────────────────────┘
-                                    │ HTTP / REST API / JSON
-┌───────────────────────────────────▼────────────────────────────────────┐
-│                 Application Layer (Spring Boot 3.3 / Java 21)          │
-│   • Embedded Apache Tomcat Container on Port 5000                      │
-│   • Spring Web MVC Controllers + Pebble Template Engine (HTML5)        │
-│   • Session Authentication & Role-Based Access Control (Admin/User)    │
-│   • REST Controllers (/api/affordability, /api/what-if, /api/chat)     │
-└───────────────────┬────────────────────────────────┬───────────────────┘
-                    │                                │
-┌───────────────────▼─────────────────┐   ┌──────────▼───────────────────┐
-│     Decision Intelligence Engines   │   │        Data Persistence      │
-│   • FinancialIntelligenceService    │   │   • SQLite3 (JDBC)           │
-│   • Least-Squares Linear Predictor  │   │   • Multi-User Isolated      │
-│   • NLP Categorizer & Rule Matcher  │   │   • Audit Logging & Backups  │
-└─────────────────────────────────────┘   └──────────────────────────────┘
-```
-
----
-
-## ⚡ Quick Start & Local Setup
-
-### Prerequisites
-- **Java Development Kit (JDK 17+)** *(JDK 21 or 25 recommended)*
-- **Apache Maven 3.8+** *(Optional if using the pre-compiled JAR)*
-
-### 1. Clone the Repository
+## Quick Start
 ```bash
+# Clone the repo (if you haven't already)
 git clone https://github.com/Shubhamverma2221/expense-tracker-ai.git
 cd expense-tracker-ai
+
+# Create a virtual environment (recommended)
+python -m venv .venv
+# Activate (PowerShell)
+.\.venv\Scripts\Activate.ps1
+# or Bash
+source .venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Apply migrations and create a superuser
+python manage.py migrate
+python manage.py createsuperuser
+
+# Run the development server
+python manage.py runserver
+```
+Open [http://127.0.0.1:8000/](http://127.0.0.1:8000/) in your browser.
+
+## API Endpoints
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/expenses/` | `GET, POST` | List all expenses / create a new expense |
+| `/api/expenses/<id>/` | `GET, PUT, PATCH, DELETE` | Retrieve, update or delete a specific expense |
+| `/api/goals/` | `GET, POST` | Manage financial goals |
+| `/api/recurring/` | `GET, POST` | Manage recurring transactions |
+
+All endpoints require authentication (use the superuser credentials you created). You can obtain a session cookie via the Django admin login or add token authentication later.
+
+## Project Structure
+```
+expense-tracker-ai-main/
+│   manage.py
+│   requirements.txt
+│   .gitignore
+│
+├───expense_tracker_proj/      # Django project settings
+│       __init__.py
+│       settings.py
+│       urls.py
+│       wsgi.py
+│
+└───expenses/                  # Core app
+        __init__.py
+        admin.py
+        apps.py
+        models.py
+        serializers.py
+        views.py
+        urls.py
+        migrations/
+
+static/                         # Static files (CSS, images)
+templates/                     # HTML templates (base.html, etc.)
 ```
 
-### 2. Run the Application
+## Contributing
+Feel free to open issues or submit pull requests. When contributing:
+1. Fork the repository.
+2. Create a feature branch.
+3. Ensure code follows PEP‑8 standards.
+4. Run tests (`python manage.py test`) before submitting.
 
-#### Option A: 1-Click Launch (Windows)
-Double-click or execute:
-```cmd
-run.bat
-```
-*(Auto-detects Java, uses the pre-packaged JAR, and boots in ~3 seconds on port 5000)*
-
-#### Option B: Run via Java directly
-```bash
-java -jar target/expense-tracker-ai-1.0.0.jar
-```
-
-#### Option C: Run via Maven
-```bash
-mvn spring-boot:run
-```
-
-Open **[http://127.0.0.1:5000](http://127.0.0.1:5000)** in your browser.
-
----
-
-## 🐳 Docker Deployment
-
-Run with Docker:
-```bash
-docker build -t expense-tracker-ai .
-docker run -p 5000:5000 expense-tracker-ai
-```
-
-Or run with Docker Compose:
-```bash
-docker-compose up --build -d
-```
-The app will be live at `http://localhost:5000`.
-
----
-
-## 🌐 Cloud Deployment (Live on Render)
-
-The project is configured for 1-click Docker deployment on Render:
-👉 **[https://expense-tracker-ai-c9f0.onrender.com](https://expense-tracker-ai-c9f0.onrender.com)**
-
-### Deploy Your Own Instance:
-1. Fork or push this repository to GitHub.
-2. Link the repository on [Render](https://render.com) using the Blueprint feature (`render.yaml`).
-3. Render automatically builds the multi-stage `Dockerfile` (Maven + Eclipse Temurin JRE) and binds dynamically to `$PORT`.
-
----
-
-## 🔑 Pre-Seeded Test Credentials
-
-| Account Role | Email | Password | Dataset & Portfolio |
-| :--- | :--- | :--- | :--- |
-| **⚡ 1-Click Instant Demo** | Click *[Try Demo Account](https://expense-tracker-ai-c9f0.onrender.com/guest-login)* | *(No login required)* | **7,137 transactions**, active budgets, recurring bills, health rating. |
-| **👤 Main Demo User** | `guest@expensetracker.ai` | `guest123` | Priya Sharma — ₹75k income, ₹300k goal, 24-month Kaggle history. |
-| **🎓 Student Mode** | `student@expensetracker.ai` | `student123` | Aarav Mehta — ₹14k allowance, semester burn-rate & micro-leak radar. |
-| **💼 Pro Investor** | `pro@expensetracker.ai` | `pro123` | Vikram Malhotra — ₹180k income, SIPs, EMIs, high investment tier. |
-| **🛡️ Administrator** | `admin@expensetracker.ai` | `admin123` | Multi-user platform analytics & system logs. |
-
----
-
-## 📄 License
-Distributed under the MIT License. See `LICENSE` for more information.
+## License
+This project is licensed under the MIT License.
