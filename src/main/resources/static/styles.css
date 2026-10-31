@@ -257,7 +257,9 @@ a:hover {
   animation: fadeIn 0.15s ease;
 }
 
-.dropdown-menu.show {
+.dropdown-menu.show,
+.user-dropdown:hover .dropdown-menu,
+.user-dropdown:focus-within .dropdown-menu {
   display: flex;
 }
 
@@ -1139,6 +1141,10 @@ a:hover {
   font-size: 0.9rem;
 }
 
+.mobile-only {
+  display: none !important;
+}
+
 /* ==========================================================================
    Responsive Breakpoints
    ========================================================================== */
@@ -1146,6 +1152,8 @@ a:hover {
   .hero-title { font-size: 2.25rem; }
   .nav-links { display: none; }
   .mobile-toggle { display: block; }
+  .mobile-only { display: block !important; }
   .floating-chat-btn { bottom: 1rem; left: 1rem; }
   .chat-drawer { width: calc(100vw - 2rem); left: 1rem; bottom: 5rem; }
 }
+

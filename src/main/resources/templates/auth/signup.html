@@ -12,12 +12,12 @@
         <form action="{{ url_for('signup') }}" method="POST">
             <div class="form-group">
                 <label class="form-label" for="signupName">Full Name</label>
-                <input type="text" id="signupName" name="name" class="form-control" placeholder="e.g. Rahul Verma" value="{{ name|default('') }}" required autofocus>
+                <input type="text" id="signupName" name="name" class="form-control" placeholder="e.g. Rahul Verma" value="{{ name != null ? name : '' }}" required autofocus>
             </div>
 
             <div class="form-group">
                 <label class="form-label" for="signupEmail">Email Address</label>
-                <input type="email" id="signupEmail" name="email" class="form-control" placeholder="name@example.com" value="{{ email|default('') }}" required>
+                <input type="email" id="signupEmail" name="email" class="form-control" placeholder="name@example.com" value="{{ email != null ? email : '' }}" required>
             </div>
 
             <div class="form-group">

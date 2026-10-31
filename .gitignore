@@ -1,39 +1,21 @@
-# Byte-compiled / optimized / DLL files
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
 
-# Virtual environments
-.venv/
-env/
-venv/
-ENV/
+# Django
+*.log
+local_settings.py
+db.sqlite3
+/media
+/staticfiles
 
-# Cache directories
-.cache/
-.pytest_cache/
-
-# Local Environment Variables
+# Env
 .env
+.env.*
 
-# OS generated files
-.DS_Store
-Thumbs.db
-
-# Java & Maven build artifacts
-target/
-*.class
-*.jar
-*.war
-*.ear
-
-# IDE & Editor files
+# VSCode
 .vscode/
-.idea/
-*.iml
-*.ipr
-*.iws
-.project
-.classpath
-.settings/
 
+# MacOS
+.DS_Store

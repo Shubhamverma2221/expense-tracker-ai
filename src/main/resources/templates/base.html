@@ -22,13 +22,13 @@
     <!-- Sticky Navigation Bar -->
     <nav class="navbar">
         <div class="nav-container">
-            <a href="{{ (session.user_id != null) ? url_for('index') : url_for('landing') }}" class="brand">
+            <a href="{{ is_logged_in ? url_for('index') : url_for('landing') }}" class="brand">
                 <div class="brand-icon">⚡</div>
                 <span>ExpenseAI</span>
             </a>
 
             <!-- Navigation Links -->
-            {% if session.get('user_id') %}
+            {% if is_logged_in %}
             <ul class="nav-links">
                 <li><a href="{{ url_for('dashboard') }}" class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}">📊 Dashboard</a></li>
                 <li><a href="{{ url_for('list_expenses') }}" class="nav-link {% if request.endpoint == 'list_expenses' %}active{% endif %}">📋 Expenses</a></li>
@@ -37,9 +37,12 @@
                 <li><a href="{{ url_for('analytics_page') }}" class="nav-link {% if request.endpoint == 'analytics_page' %}active{% endif %}">📈 Analytics</a></li>
                 <li><a href="{{ url_for('predict_page') }}" class="nav-link {% if request.endpoint == 'predict_page' %}active{% endif %}">🔮 Forecast</a></li>
                 <li><a href="{{ url_for('chat_page') }}" class="nav-link {% if request.endpoint == 'chat_page' %}active{% endif %}">💬 AI Chat</a></li>
-                {% if session.get('user_role') == 'admin' %}
+                {% if is_admin %}
                 <li><a href="{{ url_for('admin_page') }}" class="nav-link {% if request.endpoint == 'admin_page' %}active{% endif %}">🛡️ Admin</a></li>
                 {% endif %}
+                <li class="mobile-only"><a href="{{ url_for('profile_page') }}" class="nav-link">👤 My Profile</a></li>
+                <li class="mobile-only"><a href="{{ url_for('settings_page') }}" class="nav-link">⚙️ Settings</a></li>
+                <li class="mobile-only"><a href="{{ url_for('logout') }}" class="nav-link" style="color: var(--danger);">🚪 Logout</a></li>
             </ul>
             {% else %}
             <ul class="nav-links">
@@ -52,7 +55,7 @@
 
             <!-- Right Actions -->
             <div class="nav-actions">
-                {% if session.get('user_id') %}
+                {% if is_logged_in %}
                 <!-- Quick Add Expense Trigger Button -->
                 <button class="btn btn-primary btn-sm" data-open-modal="quickAddModal">
                     <span>➕ Add</span>
@@ -70,20 +73,20 @@
 
                 <!-- User Dropdown Menu -->
                 <div class="user-dropdown">
-                    <button id="userMenuBtn" class="user-btn">
+                    <button id="userMenuBtn" class="user-btn" aria-label="User Account Menu" aria-expanded="false">
                         <div class="user-avatar">{{ user_avatar }}</div>
                         <span>{{ user_first_name }}</span>
                         <small>▾</small>
                     </button>
                     <div id="userDropdownMenu" class="dropdown-menu">
                         <div style="padding: 0.5rem 0.8rem; font-size: 0.8rem; color: var(--text-muted);">
-                            Signed in as<br><strong style="color: var(--text-primary);">{{ session.get('user_email') }}</strong>
+                            Signed in as<br><strong style="color: var(--text-primary);">{{ current_user_email }}</strong>
                         </div>
                         <div class="dropdown-divider"></div>
                         <a href="{{ url_for('profile_page') }}" class="dropdown-item">👤 Profile</a>
                         <a href="{{ url_for('settings_page') }}" class="dropdown-item">⚙️ Settings</a>
                         <a href="{{ url_for('about_page') }}" class="dropdown-item">ℹ️ About Project</a>
-                        {% if session.get('user_role') == 'admin' %}
+                        {% if is_admin %}
                         <a href="{{ url_for('admin_page') }}" class="dropdown-item" style="color: var(--primary);">🛡️ Admin Panel</a>
                         {% endif %}
                         <div class="dropdown-divider"></div>
@@ -108,7 +111,7 @@
     </main>
 
     <!-- Floating AI Assistant Widget (Available on all authenticated pages) -->
-    {% if session.get('user_id') %}
+    {% if is_logged_in %}
     <button id="floatingChatBtn" class="floating-chat-btn" title="Ask AI Financial Assistant">💬</button>
     <div id="chatDrawer" class="chat-drawer">
         <div class="chat-drawer-header">
@@ -120,7 +123,7 @@
         </div>
         <div id="chatDrawerBody" class="chat-drawer-body">
             <div class="chat-bubble bot">
-                👋 Hello {{ (session.get('user_name', 'there')).split(' ')[0] }}! You can type things like <em>"spent 250 on groceries"</em>, <em>"how much on food this month?"</em>, or <em>"budget status"</em>.
+                👋 Hello {{ user_first_name }}! You can type things like <em>"spent 250 on groceries"</em>, <em>"how much on food this month?"</em>, or <em>"budget status"</em>.
             </div>
         </div>
         <div class="chat-drawer-footer">
@@ -140,7 +143,7 @@
             </div>
             <form action="{{ url_for('add') }}" method="POST">
                 <div class="form-group">
-                    <label class="form-label">Amount ({{ session.get('user_currency', '₹') }})</label>
+                    <label class="form-label">Amount ({{ currency }})</label>
                     <input type="number" step="0.01" min="0.01" name="amount" class="form-control" placeholder="e.g. 450.00" required autofocus>
                 </div>
                 <div class="form-group">
